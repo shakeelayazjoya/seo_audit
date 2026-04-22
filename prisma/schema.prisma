@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Audit {
+  id          String   @id @default(cuid())
+  domain      String
+  status      String   @default("queued") // queued | running | complete | failed
+  overallScore Int     @default(0)
+  technical   String?  // JSON ModuleResult
+  onPage      String?  // JSON ModuleResult
+  performance String?  // JSON ModuleResult
+  cro         String?  // JSON ModuleResult
+  localSeo    String?  // JSON ModuleResult
+  aiSeo       String?  // JSON ModuleResult
+  schema      String?  // JSON ModuleResult
+  rawModules  String?  // full JSON of all modules
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  email     String
+  domain    String?
+  auditId   String?
+  source    String   @default("pdf_gate") // pdf_gate | calendly | stripe
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  audits    Audit[]
+}
