@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Globe, Clock, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,12 @@ export function AuditHistory({ audits, onSelectAudit }: AuditHistoryProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-muted-foreground">Recent Audits</h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground">Recent Audits</h3>
+        <Link href="/history" className="text-xs font-medium text-primary hover:underline">
+          View all history
+        </Link>
+      </div>
       <div className="space-y-2">
         {audits.map((audit, idx) => {
           const grade = getGrade(audit.overallScore);
@@ -53,6 +59,11 @@ export function AuditHistory({ audits, onSelectAudit }: AuditHistoryProps) {
                       >
                         {grade} — {audit.overallScore}
                       </Badge>
+                      {audit.isPartial && (
+                        <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0">
+                          Partial
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="size-3" />

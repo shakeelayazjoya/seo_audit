@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import type { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import type { AuditData } from '@/lib/types';
 import { MODULE_CONFIG, type ModuleKey } from '@/lib/types';
 
@@ -59,10 +60,10 @@ export function ModuleRadarChart({ audit }: RadarChartProps) {
               fontSize: '13px',
               color: 'var(--popover-foreground)',
             }}
-            formatter={(value: number, name: string, props: { payload: { fullName: string; weight: number } }) => [
-              `${value}/100`,
-              props.payload.fullName,
-            ]}
+            formatter={(value: number, _name: string, item: Payload<number, string>) => {
+              const label = typeof item.payload?.fullName === 'string' ? item.payload.fullName : 'Score';
+              return [`${value}/100`, label];
+            }}
             labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
           />
         </RechartsRadarChart>

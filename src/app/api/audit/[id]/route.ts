@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import type { AuditModules } from '@/lib/audit-mock';
+import type { AuditModules } from '@/lib/audit-engine';
+import { getAuditHistoryByDomain, getAuditRecord } from '@/lib/audit-store';
 
 export async function GET(
   _request: NextRequest,
@@ -9,9 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const audit = await db.audit.findUnique({
-      where: { id },
-    });
+    const audit = await getAuditRecord(id);
 
     if (!audit) {
       return NextResponse.json(
@@ -30,12 +28,25 @@ export async function GET(
       }
     }
 
+    const history = await getAuditHistoryByDomain(audit.domain);
+
     return NextResponse.json({
       id: audit.id,
       domain: audit.domain,
       status: audit.status,
       overallScore: audit.overallScore,
+      technical: modules?.technical ?? null,
+      onPage: modules?.onPage ?? null,
+      performance: modules?.performance ?? null,
+      cro: modules?.cro ?? null,
+      localSeo: modules?.localSeo ?? null,
+      aiSeo: modules?.aiSeo ?? null,
+      schema: modules?.schema ?? null,
       modules,
+      errorMessage: audit.errorMessage,
+      isPartial: audit.isPartial,
+      partialReason: audit.partialReason,
+      history,
       createdAt: audit.createdAt,
       updatedAt: audit.updatedAt,
     });

@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { saveLeadRecord } from '@/lib/audit-store';
+import { getSessionFromRequest } from '@/lib/auth';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { logAppEvent } from '@/lib/monitoring';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function getRequesterKey(request: NextRequest) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    'anonymous'
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSessionFromRequest(request);
+    const rateLimit = await enforceRateLimit({
+      key: session?.user?.id ?? getRequesterKey(request),
+      action: 'lead_capture',
+      limit: 10,
+      windowMs: 1000 * 60 * 30,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: 'Too many lead submissions. Please try again later.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { email, domain, auditId, source } = body as {
       email?: string;
@@ -35,9 +58,20 @@ export async function POST(request: NextRequest) {
     const leadSource = source && validSources.includes(source) ? source : 'pdf_gate';
 
     // ── Create lead record ────────────────────────────────────────────────
-    const lead = await db.lead.create({
-      data: {
-        email: trimmed,
+    const lead = await saveLeadRecord({
+      email: trimmed,
+      domain: domain || null,
+      auditId: auditId || null,
+      source: leadSource,
+      userId: session?.user?.id ?? null,
+    });
+
+    await logAppEvent({
+      level: 'info',
+      type: 'lead.captured',
+      message: 'Lead captured',
+      context: {
+        leadId: lead.id,
         domain: domain || null,
         auditId: auditId || null,
         source: leadSource,

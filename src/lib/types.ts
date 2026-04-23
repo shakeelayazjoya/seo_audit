@@ -28,6 +28,35 @@ export interface AuditData {
   aiSeo: ModuleResult | null;
   schema: ModuleResult | null;
   createdAt: string;
+  errorMessage?: string | null;
+  isPartial?: boolean;
+  partialReason?: string | null;
+  history?: AuditTrendPoint[];
+}
+
+export interface AuditTrendPoint {
+  id: string;
+  domain: string;
+  overallScore: number;
+  createdAt: string;
+  technicalScore?: number | null;
+  onPageScore?: number | null;
+  performanceScore?: number | null;
+  croScore?: number | null;
+  localSeoScore?: number | null;
+  aiSeoScore?: number | null;
+  schemaScore?: number | null;
+}
+
+export interface DomainAuditHistory {
+  domain: string;
+  latestAuditId: string;
+  latestScore: number;
+  bestScore: number;
+  averageScore: number;
+  auditCount: number;
+  lastAuditedAt: string;
+  history: AuditTrendPoint[];
 }
 
 export type AppView = 'landing' | 'loading' | 'dashboard';

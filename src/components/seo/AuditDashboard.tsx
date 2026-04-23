@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useMemo } from 'react';
-import { ArrowLeft, Download, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Download, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { ScoreRing } from '@/components/seo/ScoreRing';
 import { ModuleRadarChart } from '@/components/seo/RadarChart';
+import { AuditTrendChart } from '@/components/seo/AuditTrendChart';
 import { IssueAccordion } from '@/components/seo/IssueAccordion';
 import { FixPriorityMatrix } from '@/components/seo/FixPriorityMatrix';
 import { QuickWins } from '@/components/seo/QuickWins';
@@ -23,6 +25,48 @@ interface AuditDashboardProps {
   onBack: () => void;
   isPaid?: boolean;
   onUpgradeClick?: () => void;
+}
+
+function formatMetricLabel(key: string): string {
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^./, (char) => char.toUpperCase());
+}
+
+function formatMetricValue(value: unknown): string {
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? value.toLocaleString() : value.toFixed(2);
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0 ? 'None' : value.slice(0, 4).join(', ');
+  }
+  if (value && typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value ?? 'N/A');
+}
+
+function ModuleMetrics({ data }: { data: Record<string, unknown> }) {
+  const entries = Object.entries(data).filter(([, value]) => value !== null && value !== undefined);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+      {entries.slice(0, 8).map(([key, value]) => (
+        <div key={key} className="rounded-lg border bg-muted/30 p-3">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+            {formatMetricLabel(key)}
+          </p>
+          <p className="text-sm font-medium break-words">{formatMetricValue(value)}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }: AuditDashboardProps) {
@@ -56,10 +100,12 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="hidden sm:flex">
-                <Download className="size-3 mr-1" />
-                Export
-              </Badge>
+              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+                <Link href={`/api/report/${audit.id}`} target="_blank">
+                  <Download className="size-3 mr-1" />
+                  Export PDF
+                </Link>
+              </Button>
               {!isPaid && (
                 <Button size="sm" onClick={onUpgradeClick}>
                   <ShieldCheck className="size-3.5" />
@@ -72,6 +118,20 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {(audit.isPartial || audit.errorMessage) && (
+          <Card className="mb-6 border-amber-300 bg-amber-50">
+            <CardContent className="flex items-start gap-3 pt-6">
+              <AlertTriangle className="mt-0.5 size-5 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-900">This audit has degraded coverage</p>
+                <p className="text-sm text-amber-800">
+                  {audit.partialReason ?? audit.errorMessage ?? 'Some crawl or performance checks were incomplete, so treat the score as directional.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Hero: Score + Radar */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -130,6 +190,17 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content: Module Tabs */}
           <div className="lg:col-span-2">
+            {audit.history && audit.history.length > 1 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="text-base">Score Trend For {audit.domain}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AuditTrendChart history={audit.history} />
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardContent className="p-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -199,6 +270,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                               isPaid={isPaid}
                               onCTAClick={onUpgradeClick}
                             />
+                            <ModuleMetrics data={mod.rawData} />
                             <Separator className="mt-6" />
                           </motion.div>
                         );
@@ -238,6 +310,8 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                         <div className="mb-4">
                           <Progress value={mod.score} className="h-2" />
                         </div>
+
+                        <ModuleMetrics data={mod.rawData} />
 
                         <IssueAccordion
                           issues={mod.issues}

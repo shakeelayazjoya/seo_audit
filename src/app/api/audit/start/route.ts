@@ -1,19 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import {
-  generateAuditModules,
-  calculateOverallScore,
-} from '@/lib/audit-mock';
-import type { AuditModules } from '@/lib/audit-mock';
+import { enqueueAuditJob } from '@/lib/audit-store';
+import { getSessionFromRequest } from '@/lib/auth';
+import { enforceRateLimit } from '@/lib/rate-limit';
+import { logAppEvent } from '@/lib/monitoring';
+import { triggerBackgroundAuditDrain } from '@/lib/audit-worker-runtime';
 
 const DOMAIN_REGEX = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
+export const runtime = 'nodejs';
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function getRequesterKey(request: NextRequest) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    'anonymous'
+  );
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSessionFromRequest(request);
+    const rateLimit = await enforceRateLimit({
+      key: session?.user?.id ?? getRequesterKey(request),
+      action: 'audit_start',
+      limit: session ? 12 : 5,
+      windowMs: 1000 * 60 * 15,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ error: 'Too many audit requests. Please try again shortly.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { domain } = body as { domain?: string };
 
@@ -34,49 +50,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Create audit record (queued) ──────────────────────────────────────
-    const audit = await db.audit.create({
-      data: {
+    const now = new Date();
+    const auditId = crypto.randomUUID();
+
+    await enqueueAuditJob({
+      auditId,
+      domain: normalized,
+      userId: session?.user?.id ?? null,
+    });
+
+    await logAppEvent({
+      level: 'info',
+      type: 'audit.queued',
+      message: 'Audit job queued',
+      context: {
+        auditId,
+        domain: normalized,
+        userId: session?.user?.id ?? null,
+      },
+    });
+
+    triggerBackgroundAuditDrain();
+
+    return NextResponse.json(
+      {
+        id: auditId,
         domain: normalized,
         status: 'queued',
         overallScore: 0,
-      },
-    });
-
-    // ── Simulate audit (~2 seconds) ───────────────────────────────────────
-    await sleep(2000);
-
-    // ── Generate mock module data ─────────────────────────────────────────
-    const modules: AuditModules = generateAuditModules(normalized);
-    const overallScore = calculateOverallScore(modules);
-
-    // ── Update audit with results ─────────────────────────────────────────
-    const updated = await db.audit.update({
-      where: { id: audit.id },
-      data: {
-        status: 'complete',
-        overallScore,
-        technical: JSON.stringify(modules.technical),
-        onPage: JSON.stringify(modules.onPage),
-        performance: JSON.stringify(modules.performance),
-        cro: JSON.stringify(modules.cro),
-        localSeo: JSON.stringify(modules.localSeo),
-        aiSeo: JSON.stringify(modules.aiSeo),
-        schema: JSON.stringify(modules.schema),
-        rawModules: JSON.stringify(modules),
-      },
-    });
-
-    // ── Return full audit result ──────────────────────────────────────────
-    return NextResponse.json({
-      id: updated.id,
-      domain: updated.domain,
-      status: updated.status,
-      overallScore: updated.overallScore,
-      modules,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-    });
+        createdAt: now,
+        updatedAt: now,
+        isPartial: false,
+        partialReason: null,
+        modules: null,
+        history: [],
+      }
+    );
   } catch (error) {
     console.error('[POST /api/audit/start] Error:', error);
     return NextResponse.json(

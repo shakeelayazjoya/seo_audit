@@ -37,7 +37,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
 
     return [
       {
-        severity: 'critical',
+        severity: 'critical' as const,
         label: 'Critical Issues',
         icon: <AlertCircle className="size-4" />,
         color: 'text-red-600',
@@ -45,7 +45,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
         issues: critical,
       },
       {
-        severity: 'warning',
+        severity: 'warning' as const,
         label: 'Warnings',
         icon: <AlertTriangle className="size-4" />,
         color: 'text-orange-600',
@@ -53,7 +53,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
         issues: warnings,
       },
       {
-        severity: 'opportunity',
+        severity: 'opportunity' as const,
         label: 'Opportunities',
         icon: <Lightbulb className="size-4" />,
         color: 'text-emerald-600',

@@ -1,26 +1,15 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { listAuditRecords } from '@/lib/audit-store';
+import { getSessionFromRequest } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const audits = await db.audit.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-      select: {
-        id: true,
-        domain: true,
-        status: true,
-        overallScore: true,
-        createdAt: true,
-      },
-    });
+    const session = await getSessionFromRequest(request);
+    const audits = await listAuditRecords(20, session?.userId ?? null);
 
     return NextResponse.json({ audits });
   } catch (error) {
-    console.error('[GET /api/audits] Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.warn('[GET /api/audits] Returning empty audit list because persistence is unavailable:', error);
+    return NextResponse.json({ audits: [] });
   }
 }

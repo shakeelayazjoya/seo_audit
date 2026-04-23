@@ -14,6 +14,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -34,7 +35,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    ".next-runtime/types/**/*.ts",
+    ".next-runtime/dev/types/**/*.ts",
+    ".next-release/types/**/*.ts",
+    ".next-release/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

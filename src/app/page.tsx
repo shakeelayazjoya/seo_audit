@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Search,
   BarChart3,
@@ -17,6 +19,8 @@ import {
   Sparkles,
   Menu,
   X,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -40,7 +44,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Header / Navigation
 // ============================================================
 
-function Header({ onScrollTo }: { onScrollTo: (id: string) => void }) {
+interface SessionUser {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+}
+
+function Header({
+  onScrollTo,
+  user,
+  onLogout,
+  loggingOut,
+}: {
+  onScrollTo: (id: string) => void;
+  user: SessionUser | null;
+  onLogout: () => Promise<void>;
+  loggingOut: boolean;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
@@ -48,6 +69,7 @@ function Header({ onScrollTo }: { onScrollTo: (id: string) => void }) {
     { label: 'Pricing', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },
   ];
+  const displayName = user?.name?.trim() || user?.email || 'Account';
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -61,6 +83,36 @@ function Header({ onScrollTo }: { onScrollTo: (id: string) => void }) {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
+          {user ? (
+            <>
+              <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                My History
+              </Link>
+              <button
+                onClick={() => onScrollTo('hero')}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Dashboard
+              </button>
+              <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground">
+                <User className="size-3.5" />
+                <span className="max-w-40 truncate">{displayName}</span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => void onLogout()} disabled={loggingOut}>
+                <LogOut className="size-3.5 mr-1.5" />
+                {loggingOut ? 'Signing out...' : 'Logout'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Login
+              </Link>
+              <Link href="/signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Sign Up
+              </Link>
+            </>
+          )}
           {links.map((l) => (
             <button
               key={l.id}
@@ -92,6 +144,49 @@ function Header({ onScrollTo }: { onScrollTo: (id: string) => void }) {
             className="md:hidden overflow-hidden border-t"
           >
             <div className="px-4 py-4 space-y-3">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
+                    <User className="size-4" />
+                    <span className="truncate">{displayName}</span>
+                  </div>
+                  <Link
+                    href="/history"
+                    onClick={() => setMobileOpen(false)}
+                    className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                  >
+                    My History
+                  </Link>
+                  <button
+                    onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}
+                    className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                  >
+                    Dashboard
+                  </button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      void onLogout();
+                    }}
+                    disabled={loggingOut}
+                  >
+                    <LogOut className="size-3.5 mr-1.5" />
+                    {loggingOut ? 'Signing out...' : 'Logout'}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
+                    Login
+                  </Link>
+                  <Link href="/signup" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
+                    Sign Up
+                  </Link>
+                </>
+              )}
               {links.map((l) => (
                 <button
                   key={l.id}
@@ -120,13 +215,30 @@ function Header({ onScrollTo }: { onScrollTo: (id: string) => void }) {
 function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
   const [url, setUrl] = useState('');
   const [pastAudits, setPastAudits] = useState<AuditData[]>([]);
+  const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    fetch('/api/audits')
+    fetch('/api/auth/session', { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({ user: null }));
+        if (response.ok) {
+          setSessionUser(data.user ?? null);
+        } else {
+          setSessionUser(null);
+        }
+      })
+      .catch(() => setSessionUser(null));
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/audits', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          const mapped = data.map((a: Record<string, unknown>) => ({
+        const audits = Array.isArray(data) ? data : Array.isArray(data?.audits) ? data.audits : [];
+        if (audits.length > 0) {
+          const mapped = audits.map((a: Record<string, unknown>) => ({
             id: a.id as string,
             domain: a.domain as string,
             status: a.status as string,
@@ -139,6 +251,9 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
             aiSeo: a.aiSeo ? JSON.parse(a.aiSeo as string) : null,
             schema: a.schema ? JSON.parse(a.schema as string) : null,
             createdAt: a.createdAt as string,
+            errorMessage: (a.errorMessage as string | null | undefined) ?? null,
+            isPartial: Boolean(a.isPartial),
+            partialReason: (a.partialReason as string | null | undefined) ?? null,
           }));
           setPastAudits(mapped);
         }
@@ -146,10 +261,55 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
       .catch(() => {});
   }, []);
 
+  const handleLogout = useCallback(async () => {
+    setLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setSessionUser(null);
+      setPastAudits([]);
+      window.location.href = '/';
+    } finally {
+      setLoggingOut(false);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
     onAnalyze(url.trim());
+  };
+
+  const startCommercialFlow = async (flow: 'diy' | 'strategy' | 'implementation') => {
+    setCommerceLoading(flow);
+
+    try {
+      if (flow === 'strategy') {
+        const response = await fetch('/api/commercial/booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain: url || null }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Booking failed');
+        window.location.href = data.url;
+        return;
+      }
+
+      const response = await fetch('/api/commercial/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: flow === 'implementation' ? 'implementation' : 'diy' }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Checkout failed');
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Commercial flow error:', error);
+    } finally {
+      setCommerceLoading(null);
+    }
   };
 
   const features = [
@@ -288,9 +448,29 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const auditCount = pastAudits.length;
+  const averageScore =
+    auditCount > 0
+      ? Math.round(pastAudits.reduce((sum, audit) => sum + audit.overallScore, 0) / auditCount)
+      : 0;
+  const trackedDomains = new Set(pastAudits.map((audit) => audit.domain.toLowerCase())).size;
+  const issueCount = pastAudits.reduce((sum, audit) => {
+    const modules = [
+      audit.technical,
+      audit.onPage,
+      audit.performance,
+      audit.cro,
+      audit.localSeo,
+      audit.aiSeo,
+      audit.schema,
+    ];
+
+    return sum + modules.reduce((moduleSum, module) => moduleSum + (module?.issues.length ?? 0), 0);
+  }, 0);
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header onScrollTo={scrollTo} />
+      <Header onScrollTo={scrollTo} user={sessionUser} onLogout={handleLogout} loggingOut={loggingOut} />
 
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden border-b bg-gradient-to-b from-muted/50 to-background">
@@ -359,10 +539,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
             className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto"
           >
             {[
-              { value: '50K+', label: 'Audits Run' },
+              { value: auditCount > 0 ? auditCount.toLocaleString() : '0', label: 'Audits Stored' },
               { value: '7', label: 'SEO Modules' },
-              { value: '2.5M+', label: 'Issues Found' },
-              { value: '4.9/5', label: 'User Rating' },
+              { value: issueCount > 0 ? issueCount.toLocaleString() : '0', label: 'Issues Logged' },
+              { value: trackedDomains > 0 ? `${averageScore}/100` : 'N/A', label: trackedDomains > 0 ? 'Average Score' : 'Average Score Pending' },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl font-bold">{stat.value}</div>
@@ -544,9 +724,23 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                   <Button
                     className="w-full"
                     variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => scrollTo('hero')}
+                    onClick={() =>
+                      startCommercialFlow(
+                        plan.name === 'Strategy Plan'
+                          ? 'strategy'
+                          : plan.name === 'Full Implementation'
+                            ? 'implementation'
+                            : 'diy'
+                      )
+                    }
+                    disabled={commerceLoading === 'diy' || commerceLoading === 'strategy' || commerceLoading === 'implementation'}
                   >
-                    {plan.cta}
+                    {commerceLoading &&
+                    ((commerceLoading === 'diy' && plan.name === 'DIY Plan') ||
+                      (commerceLoading === 'strategy' && plan.name === 'Strategy Plan') ||
+                      (commerceLoading === 'implementation' && plan.name === 'Full Implementation'))
+                      ? 'Opening...'
+                      : plan.cta}
                     <ArrowRight className="size-3.5 ml-1.5" />
                   </Button>
                 </CardFooter>
@@ -656,6 +850,35 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
         </section>
       )}
 
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
+        <div className="rounded-2xl border bg-muted/20 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Explore specialized audit routes</h3>
+              <p className="text-sm text-muted-foreground">
+                These landing pages connect into the same live crawl, scoring, history, and PDF export pipeline.
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/history">Open Audit History</Link>
+            </Button>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {[
+              ['/seo-audit-tool', 'SEO Audit Tool'],
+              ['/technical-seo-audit', 'Technical SEO Audit'],
+              ['/ai-seo-audit', 'AI SEO Audit'],
+              ['/local-seo-audit', 'Local SEO Audit'],
+              ['/cro-audit', 'CRO Audit'],
+            ].map(([href, label]) => (
+              <Button key={href} asChild variant="secondary" size="sm">
+                <Link href={href}>{label}</Link>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t mt-auto">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
@@ -677,25 +900,25 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                 <li><button onClick={() => scrollTo('features')} className="hover:text-foreground transition-colors">Features</button></li>
                 <li><button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">Pricing</button></li>
                 <li><button onClick={() => scrollTo('faq')} className="hover:text-foreground transition-colors">FAQ</button></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Changelog</span></li>
+                <li><Link href="/history" className="hover:text-foreground transition-colors">Audit History</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-3">Audit Modules</h4>
               <ul className="space-y-2 text-xs text-muted-foreground">
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Technical SEO</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Core Web Vitals</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">On-Page & Content</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">CRO Analysis</span></li>
+                <li><Link href="/technical-seo-audit" className="hover:text-foreground transition-colors">Technical SEO</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">Core Web Vitals</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">On-Page & Content</Link></li>
+                <li><Link href="/cro-audit" className="hover:text-foreground transition-colors">CRO Analysis</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Company</h4>
+              <h4 className="font-semibold text-sm mb-3">Growth Pages</h4>
               <ul className="space-y-2 text-xs text-muted-foreground">
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">About Us</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Blog</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Careers</span></li>
-                <li><span className="hover:text-foreground cursor-pointer transition-colors">Contact</span></li>
+                <li><Link href="/ai-seo-audit" className="hover:text-foreground transition-colors">AI SEO Audit</Link></li>
+                <li><Link href="/local-seo-audit" className="hover:text-foreground transition-colors">Local SEO Audit</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">SEO Audit Tool</Link></li>
+                <li><Link href="/history" className="hover:text-foreground transition-colors">Domain Trends</Link></li>
               </ul>
             </div>
           </div>
@@ -808,8 +1031,10 @@ function LoadingState({ domain }: { domain: string }) {
 // ============================================================
 
 export default function Home() {
+  const searchParams = useSearchParams();
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
+  const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
   const [inputDomain, setInputDomain] = useState('');
   const [showLeadDialog, setShowLeadDialog] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
@@ -824,20 +1049,32 @@ export default function Home() {
         const res = await fetch(`/api/audit/${domainOrId}`);
         if (res.ok) {
           const data = await res.json();
+          if (data.status === 'queued' || data.status === 'running') {
+            setPendingAuditId(data.id);
+            setInputDomain(data.domain);
+            setView('loading');
+            return;
+          }
+          const modules = data.modules ?? {};
           setCurrentAudit({
             id: data.id,
             domain: data.domain,
             status: data.status,
             overallScore: data.overallScore,
-            technical: data.technical ?? null,
-            onPage: data.onPage ?? null,
-            performance: data.performance ?? null,
-            cro: data.cro ?? null,
-            localSeo: data.localSeo ?? null,
-            aiSeo: data.aiSeo ?? null,
-            schema: data.schema ?? null,
+            technical: data.technical ?? modules.technical ?? null,
+            onPage: data.onPage ?? modules.onPage ?? null,
+            performance: data.performance ?? modules.performance ?? null,
+            cro: data.cro ?? modules.cro ?? null,
+            localSeo: data.localSeo ?? modules.localSeo ?? null,
+            aiSeo: data.aiSeo ?? modules.aiSeo ?? null,
+            schema: data.schema ?? modules.schema ?? null,
             createdAt: data.createdAt,
+            errorMessage: data.errorMessage ?? null,
+            isPartial: data.isPartial ?? false,
+            partialReason: data.partialReason ?? null,
+            history: Array.isArray(data.history) ? data.history : [],
           });
+          setPendingAuditId(null);
           setView('dashboard');
           return;
         }
@@ -856,6 +1093,13 @@ export default function Home() {
       }
 
       const data = await res.json();
+      if (data.status === 'queued' || data.status === 'running') {
+        setPendingAuditId(data.id);
+        setInputDomain(data.domain);
+        setView('loading');
+        return;
+      }
+
       const modules = data.modules;
 
       setCurrentAudit({
@@ -871,10 +1115,16 @@ export default function Home() {
         aiSeo: modules?.aiSeo ?? null,
         schema: modules?.schema ?? null,
         createdAt: data.createdAt,
+        errorMessage: data.errorMessage ?? null,
+        isPartial: data.isPartial ?? false,
+        partialReason: data.partialReason ?? null,
+        history: Array.isArray(data.history) ? data.history : [],
       });
+      setPendingAuditId(null);
       setView('dashboard');
     } catch (err) {
       console.error('Audit error:', err);
+      setPendingAuditId(null);
       setView('landing');
     }
   }, []);
@@ -882,7 +1132,102 @@ export default function Home() {
   const handleBack = useCallback(() => {
     setView('landing');
     setCurrentAudit(null);
+    setPendingAuditId(null);
   }, []);
+
+  useEffect(() => {
+    const auditId = searchParams.get('audit');
+    if (auditId && view === 'landing' && !currentAudit) {
+      const timeoutId = window.setTimeout(() => {
+        void handleAnalyze(auditId);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [searchParams, view, currentAudit, handleAnalyze]);
+
+  useEffect(() => {
+    if (view !== 'loading' || !pendingAuditId) return;
+
+    let cancelled = false;
+    let pollDelayMs = 5000;
+    const startedAt = Date.now();
+    let timeoutId: number | null = null;
+    const MAX_POLL_DURATION_MS = 190000;
+
+    const pollAudit = async () => {
+      let shouldContinue = true;
+
+      try {
+        if (Date.now() - startedAt > MAX_POLL_DURATION_MS) {
+          console.error('Audit polling timed out');
+          setPendingAuditId(null);
+          setView('landing');
+          shouldContinue = false;
+          return;
+        }
+
+        const res = await fetch(`/api/audit/${pendingAuditId}`, {
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (data.status === 'complete') {
+          const modules = data.modules ?? {};
+          setCurrentAudit({
+            id: data.id,
+            domain: data.domain,
+            status: data.status,
+            overallScore: data.overallScore,
+            technical: data.technical ?? modules.technical ?? null,
+            onPage: data.onPage ?? modules.onPage ?? null,
+            performance: data.performance ?? modules.performance ?? null,
+            cro: data.cro ?? modules.cro ?? null,
+            localSeo: data.localSeo ?? modules.localSeo ?? null,
+            aiSeo: data.aiSeo ?? modules.aiSeo ?? null,
+            schema: data.schema ?? modules.schema ?? null,
+            createdAt: data.createdAt,
+            errorMessage: data.errorMessage ?? null,
+            isPartial: data.isPartial ?? false,
+            partialReason: data.partialReason ?? null,
+            history: Array.isArray(data.history) ? data.history : [],
+          });
+          setPendingAuditId(null);
+          setView('dashboard');
+          shouldContinue = false;
+          return;
+        }
+
+        if (data.status === 'failed') {
+          console.error('Audit worker failed:', data.errorMessage);
+          setPendingAuditId(null);
+          setView('landing');
+          shouldContinue = false;
+          return;
+        }
+      } catch (error) {
+        console.error('Audit polling error:', error);
+      } finally {
+        if (!cancelled && shouldContinue && pendingAuditId) {
+          pollDelayMs = Math.min(15000, Math.round(pollDelayMs * 1.35));
+          timeoutId = window.setTimeout(() => {
+            void pollAudit();
+          }, pollDelayMs);
+        }
+      }
+    };
+
+    void pollAudit();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [view, pendingAuditId]);
 
   return (
     <div className="min-h-screen bg-background">
