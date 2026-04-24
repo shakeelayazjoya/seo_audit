@@ -1,4 +1,8 @@
-import { registerCustomPerformanceAnalyzer, type RuntimePerformanceMetrics } from '../src/lib/performance-analysis.ts';
+import {
+  registerCustomPerformanceAnalyzer,
+  type DevicePerformanceReport,
+  type RuntimePerformanceMetrics,
+} from '../src/lib/performance-analysis.ts';
 import { runAuditWorkerLoop } from '../src/lib/audit-worker-runtime.ts';
 
 function toHundredScale(score: number | null | undefined) {
@@ -53,15 +57,15 @@ registerCustomPerformanceAnalyzer(async (originUrl) => {
     );
 
     const mobileAudits = (mobileRun?.lhr?.audits ?? {}) as Record<string, { numericValue?: number; details?: Record<string, unknown> }>;
+    const desktopAudits = (desktopRun?.lhr?.audits ?? {}) as Record<string, { numericValue?: number; details?: Record<string, unknown> }>;
     const renderBlockingDetails = mobileAudits['render-blocking-resources']?.details as
       | { overallSavingsMs?: number }
       | undefined;
-    return {
-      provider: 'lighthouse',
-      lighthouseScore: {
-        mobile: toHundredScale(mobileRun?.lhr?.categories?.performance?.score),
-        desktop: toHundredScale(desktopRun?.lhr?.categories?.performance?.score),
-      },
+    const desktopRenderBlockingDetails = desktopAudits['render-blocking-resources']?.details as
+      | { overallSavingsMs?: number }
+      | undefined;
+    const mobileReport: DevicePerformanceReport = {
+      score: toHundredScale(mobileRun?.lhr?.categories?.performance?.score),
       lcpMs: mobileAudits['largest-contentful-paint']?.numericValue ?? null,
       inpMs:
         mobileAudits['interaction-to-next-paint']?.numericValue ??
@@ -72,6 +76,39 @@ registerCustomPerformanceAnalyzer(async (originUrl) => {
       ttfbMs: mobileAudits['server-response-time']?.numericValue ?? null,
       renderBlockingResources: renderBlockingDetails?.overallSavingsMs ?? null,
       thirdPartyBytes: mobileAudits['third-party-summary']?.numericValue ?? null,
+      notes: ['Collected in detached Lighthouse worker process.'],
+    };
+    const desktopReport: DevicePerformanceReport = {
+      score: toHundredScale(desktopRun?.lhr?.categories?.performance?.score),
+      lcpMs: desktopAudits['largest-contentful-paint']?.numericValue ?? null,
+      inpMs:
+        desktopAudits['interaction-to-next-paint']?.numericValue ??
+        desktopAudits['interactive']?.numericValue ??
+        null,
+      cls: desktopAudits['cumulative-layout-shift']?.numericValue ?? null,
+      fcpMs: desktopAudits['first-contentful-paint']?.numericValue ?? null,
+      ttfbMs: desktopAudits['server-response-time']?.numericValue ?? null,
+      renderBlockingResources: desktopRenderBlockingDetails?.overallSavingsMs ?? null,
+      thirdPartyBytes: desktopAudits['third-party-summary']?.numericValue ?? null,
+      notes: ['Collected in detached Lighthouse worker process.'],
+    };
+    return {
+      provider: 'lighthouse',
+      lighthouseScore: {
+        mobile: mobileReport.score,
+        desktop: desktopReport.score,
+      },
+      devices: {
+        mobile: mobileReport,
+        desktop: desktopReport,
+      },
+      lcpMs: mobileReport.lcpMs,
+      inpMs: mobileReport.inpMs,
+      cls: mobileReport.cls,
+      fcpMs: mobileReport.fcpMs,
+      ttfbMs: mobileReport.ttfbMs,
+      renderBlockingResources: mobileReport.renderBlockingResources,
+      thirdPartyBytes: mobileReport.thirdPartyBytes,
       notes: ['Collected in detached Lighthouse worker process.'],
     } satisfies RuntimePerformanceMetrics;
   } catch {

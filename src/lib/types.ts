@@ -100,3 +100,15 @@ export function getSeverityColor(severity: string): string {
     default: return '#6b7280';
   }
 }
+
+export function getPriorityScore(issue: AuditIssue): number {
+  return Math.round((issue.impactScore * 10) / Math.max(1, issue.effortScore));
+}
+
+export function compareIssuesByPriority(a: AuditIssue, b: AuditIssue): number {
+  return (
+    getPriorityScore(b) - getPriorityScore(a) ||
+    b.impactScore - a.impactScore ||
+    a.effortScore - b.effortScore
+  );
+}

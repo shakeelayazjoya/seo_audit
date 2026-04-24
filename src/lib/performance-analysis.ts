@@ -1,11 +1,27 @@
 import { createRequire } from 'node:module';
 import type { Browser } from 'playwright';
 
+export interface DevicePerformanceReport {
+  score: number | null;
+  lcpMs: number | null;
+  inpMs: number | null;
+  cls: number | null;
+  fcpMs: number | null;
+  ttfbMs: number | null;
+  renderBlockingResources: number | null;
+  thirdPartyBytes: number | null;
+  notes: string[];
+}
+
 export interface RuntimePerformanceMetrics {
   provider: 'pagespeed' | 'playwright' | 'lighthouse' | 'fallback';
   lighthouseScore: {
     mobile: number | null;
     desktop: number | null;
+  };
+  devices: {
+    mobile: DevicePerformanceReport;
+    desktop: DevicePerformanceReport;
   };
   lcpMs: number | null;
   inpMs: number | null;
@@ -31,6 +47,20 @@ export function registerCustomPerformanceAnalyzer(
 function toHundredScale(score: number | null | undefined): number | null {
   if (typeof score !== 'number' || Number.isNaN(score)) return null;
   return Math.round(score * 100);
+}
+
+function createEmptyDeviceReport(note?: string): DevicePerformanceReport {
+  return {
+    score: null,
+    lcpMs: null,
+    inpMs: null,
+    cls: null,
+    fcpMs: null,
+    ttfbMs: null,
+    renderBlockingResources: null,
+    thirdPartyBytes: null,
+    notes: note ? [note] : [],
+  };
 }
 
 async function fetchPageSpeed(originUrl: string): Promise<RuntimePerformanceMetrics | null> {
@@ -61,19 +91,16 @@ async function fetchPageSpeed(originUrl: string): Promise<RuntimePerformanceMetr
   try {
     const [mobile, desktop] = await Promise.all([run('mobile'), run('desktop')]);
     const mobileAudits = mobile?.lighthouseResult?.audits ?? {};
+    const desktopAudits = desktop?.lighthouseResult?.audits ?? {};
     const loadingExperience = mobile?.loadingExperience?.metrics ?? {};
-
-    return {
-      provider: 'pagespeed',
-      lighthouseScore: {
-        mobile: toHundredScale(mobile?.lighthouseResult?.categories?.performance?.score),
-        desktop: toHundredScale(desktop?.lighthouseResult?.categories?.performance?.score),
-      },
+    const mobileReport: DevicePerformanceReport = {
+      score: toHundredScale(mobile?.lighthouseResult?.categories?.performance?.score),
       lcpMs:
         mobileAudits['largest-contentful-paint']?.numericValue ??
         loadingExperience?.LARGEST_CONTENTFUL_PAINT_MS?.percentile ??
         null,
       inpMs:
+        mobileAudits['interaction-to-next-paint']?.numericValue ??
         mobileAudits['interactive']?.numericValue ??
         loadingExperience?.INTERACTION_TO_NEXT_PAINT?.percentile ??
         null,
@@ -87,6 +114,41 @@ async function fetchPageSpeed(originUrl: string): Promise<RuntimePerformanceMetr
       renderBlockingResources:
         mobileAudits['render-blocking-resources']?.details?.overallSavingsMs ?? null,
       thirdPartyBytes: mobileAudits['third-party-summary']?.numericValue ?? null,
+      notes: [],
+    };
+    const desktopReport: DevicePerformanceReport = {
+      score: toHundredScale(desktop?.lighthouseResult?.categories?.performance?.score),
+      lcpMs: desktopAudits['largest-contentful-paint']?.numericValue ?? null,
+      inpMs:
+        desktopAudits['interaction-to-next-paint']?.numericValue ??
+        desktopAudits['interactive']?.numericValue ??
+        null,
+      cls: desktopAudits['cumulative-layout-shift']?.numericValue ?? null,
+      fcpMs: desktopAudits['first-contentful-paint']?.numericValue ?? null,
+      ttfbMs: desktopAudits['server-response-time']?.numericValue ?? null,
+      renderBlockingResources:
+        desktopAudits['render-blocking-resources']?.details?.overallSavingsMs ?? null,
+      thirdPartyBytes: desktopAudits['third-party-summary']?.numericValue ?? null,
+      notes: [],
+    };
+
+    return {
+      provider: 'pagespeed',
+      lighthouseScore: {
+        mobile: mobileReport.score,
+        desktop: desktopReport.score,
+      },
+      devices: {
+        mobile: mobileReport,
+        desktop: desktopReport,
+      },
+      lcpMs: mobileReport.lcpMs,
+      inpMs: mobileReport.inpMs,
+      cls: mobileReport.cls,
+      fcpMs: mobileReport.fcpMs,
+      ttfbMs: mobileReport.ttfbMs,
+      renderBlockingResources: mobileReport.renderBlockingResources,
+      thirdPartyBytes: mobileReport.thirdPartyBytes,
       notes,
     };
   } catch (error) {
@@ -95,19 +157,15 @@ async function fetchPageSpeed(originUrl: string): Promise<RuntimePerformanceMetr
   }
 }
 
-async function runPlaywrightLab(originUrl: string): Promise<RuntimePerformanceMetrics | null> {
-  let browser: Browser | null = null;
-  const notes: string[] = [];
-
+async function collectPlaywrightDeviceReport(
+  browser: Browser,
+  originUrl: string,
+  device: 'mobile' | 'desktop'
+): Promise<DevicePerformanceReport> {
+  const page = await browser.newPage({
+    viewport: device === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 },
+  });
   try {
-    const { chromium } = require('playwright') as typeof import('playwright');
-    browser = await chromium.launch({
-      headless: true,
-    });
-
-    const page = await browser.newPage({
-      viewport: { width: 390, height: 844 },
-    });
     await page.goto(originUrl, {
       waitUntil: 'load',
       timeout: 30000,
@@ -182,11 +240,7 @@ async function runPlaywrightLab(originUrl: string): Promise<RuntimePerformanceMe
     const labScore = Math.round(heuristicScore.reduce((sum, value) => sum + value, 0) / heuristicScore.length);
 
     return {
-      provider: 'playwright',
-      lighthouseScore: {
-        mobile: labScore,
-        desktop: null,
-      },
+      score: labScore,
       lcpMs: metrics.lcpMs,
       inpMs: metrics.inpMs,
       cls: metrics.cls,
@@ -194,6 +248,50 @@ async function runPlaywrightLab(originUrl: string): Promise<RuntimePerformanceMe
       ttfbMs: metrics.ttfbMs,
       renderBlockingResources: metrics.renderBlockingResources,
       thirdPartyBytes: metrics.thirdPartyBytes,
+      notes: [],
+    };
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
+async function runPlaywrightLab(originUrl: string): Promise<RuntimePerformanceMetrics | null> {
+  let browser: Browser | null = null;
+  const notes: string[] = [];
+
+  try {
+    const { chromium } = require('playwright') as typeof import('playwright');
+    browser = await chromium.launch({
+      headless: true,
+    });
+    const [mobileReport, desktopReport] = await Promise.all([
+      collectPlaywrightDeviceReport(browser, originUrl, 'mobile'),
+      collectPlaywrightDeviceReport(browser, originUrl, 'desktop'),
+    ]);
+
+    return {
+      provider: 'playwright',
+      lighthouseScore: {
+        mobile: mobileReport.score,
+        desktop: desktopReport.score,
+      },
+      devices: {
+        mobile: {
+          ...mobileReport,
+          notes: [...mobileReport.notes, 'Mobile lab report generated from Playwright because PageSpeed was unavailable.'],
+        },
+        desktop: {
+          ...desktopReport,
+          notes: [...desktopReport.notes, 'Desktop lab report generated from Playwright because PageSpeed was unavailable.'],
+        },
+      },
+      lcpMs: mobileReport.lcpMs,
+      inpMs: mobileReport.inpMs,
+      cls: mobileReport.cls,
+      fcpMs: mobileReport.fcpMs,
+      ttfbMs: mobileReport.ttfbMs,
+      renderBlockingResources: mobileReport.renderBlockingResources,
+      thirdPartyBytes: mobileReport.thirdPartyBytes,
       notes: [...notes, 'Fell back to browser-collected lab metrics because PageSpeed was unavailable.'],
     };
   } catch (error) {
@@ -221,6 +319,10 @@ export async function analyzeRuntimePerformance(originUrl: string): Promise<Runt
     lighthouseScore: {
       mobile: null,
       desktop: null,
+    },
+    devices: {
+      mobile: createEmptyDeviceReport('Performance provider unavailable for mobile.'),
+      desktop: createEmptyDeviceReport('Performance provider unavailable for desktop.'),
     },
     lcpMs: null,
     inpMs: null,

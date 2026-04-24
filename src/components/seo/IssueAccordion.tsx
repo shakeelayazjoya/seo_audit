@@ -11,7 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AuditIssue } from '@/lib/types';
-import { getSeverityColor } from '@/lib/types';
+import { compareIssuesByPriority, getPriorityScore, getSeverityColor } from '@/lib/types';
 import { motion } from 'framer-motion';
 
 interface IssueAccordionProps {
@@ -29,6 +29,11 @@ interface SeverityGroup {
   issues: AuditIssue[];
 }
 
+function getFixPreview(fixGuide: string) {
+  const preview = fixGuide.split(/(?<=[.!?])\s+/)[0]?.trim() ?? fixGuide.trim();
+  return preview.length > 120 ? `${preview.slice(0, 117)}...` : preview;
+}
+
 export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAccordionProps) {
   const groups = useMemo((): SeverityGroup[] => {
     const critical = issues.filter((i) => i.severity === 'critical');
@@ -42,7 +47,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
         icon: <AlertCircle className="size-4" />,
         color: 'text-red-600',
         bgColor: 'bg-red-50 border-red-200',
-        issues: critical,
+        issues: [...critical].sort(compareIssuesByPriority),
       },
       {
         severity: 'warning' as const,
@@ -50,7 +55,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
         icon: <AlertTriangle className="size-4" />,
         color: 'text-orange-600',
         bgColor: 'bg-orange-50 border-orange-200',
-        issues: warnings,
+        issues: [...warnings].sort(compareIssuesByPriority),
       },
       {
         severity: 'opportunity' as const,
@@ -58,7 +63,7 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
         icon: <Lightbulb className="size-4" />,
         color: 'text-emerald-600',
         bgColor: 'bg-emerald-50 border-emerald-200',
-        issues: opportunities,
+        issues: [...opportunities].sort(compareIssuesByPriority),
       },
     ].filter((g) => g.issues.length > 0);
   }, [issues]);
@@ -114,6 +119,10 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
                   {/* Scores */}
                   <div className="flex gap-4 mb-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
+                      <span className="font-medium">Priority:</span>
+                      <span className="font-semibold text-foreground">{getPriorityScore(issue)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
                       <span className="font-medium">Impact:</span>
                       <span className="font-semibold text-foreground">{issue.impactScore}/10</span>
                     </div>
@@ -135,14 +144,23 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
                       <p>{issue.fixGuide}</p>
                     </div>
                   ) : (
-                    <div className="relative rounded-md bg-muted/50 p-3">
-                      <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm rounded-md bg-background/60 z-10">
-                        <Button variant="outline" size="sm" className="gap-2" onClick={onCTAClick}>
+                    <div className="rounded-md border border-dashed bg-muted/30 p-3">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <p className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">Fix Preview</p>
+                          <p className="text-sm">{getFixPreview(issue.fixGuide)}</p>
+                        </div>
+                        <Lock className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                      </div>
+                      <div className="flex items-center justify-between gap-3 pt-2 border-t">
+                        <p className="text-xs text-muted-foreground">
+                          Full implementation steps are included in the full fix plan.
+                        </p>
+                        <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={onCTAClick}>
                           <Lock className="size-3" />
-                          Unlock Fix Guide
+                          Get Full Fix Plan
                         </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground blur-sm select-none">{issue.fixGuide}</p>
                     </div>
                   )}
                 </motion.div>

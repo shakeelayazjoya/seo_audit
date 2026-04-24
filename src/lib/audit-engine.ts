@@ -1194,6 +1194,8 @@ function buildOnPageModule(crawl: CrawlResult): ModuleResult {
 function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
   const pages = crawl.pages;
   const runtime = crawl.runtimePerformance;
+  const mobileRuntime = runtime.devices.mobile;
+  const desktopRuntime = runtime.devices.desktop;
   const responseTimes = pages.map((page) => page.responseTimeMs);
   const slowPages = pages.filter((page) => page.responseTimeMs > 1500);
   const heavyPages = pages.filter((page) => page.pageSizeBytes > 1_500_000);
@@ -1246,11 +1248,14 @@ function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
     );
   }
 
-  if (runtime.lcpMs && runtime.lcpMs > 2500) {
+  const worstLcpMs = [mobileRuntime.lcpMs, desktopRuntime.lcpMs].filter(
+    (value): value is number => typeof value === 'number'
+  ).sort((a, b) => b - a)[0] ?? null;
+  if (worstLcpMs && worstLcpMs > 2500) {
     issues.push(
       issue(
-        runtime.lcpMs > 4000 ? 'critical' : 'warning',
-        `Largest Contentful Paint is ${Math.round(runtime.lcpMs)}ms`,
+        worstLcpMs > 4000 ? 'critical' : 'warning',
+        `Largest Contentful Paint is ${Math.round(worstLcpMs)}ms`,
         'The main visible content is loading slower than Google recommends for a good user experience.',
         [crawl.origin],
         'Optimize the hero element, preload critical assets, compress large media, and reduce server and client-side blocking work.',
@@ -1260,11 +1265,14 @@ function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
     );
   }
 
-  if (runtime.cls && runtime.cls > 0.1) {
+  const worstCls = [mobileRuntime.cls, desktopRuntime.cls].filter(
+    (value): value is number => typeof value === 'number'
+  ).sort((a, b) => b - a)[0] ?? null;
+  if (worstCls && worstCls > 0.1) {
     issues.push(
       issue(
-        runtime.cls > 0.25 ? 'critical' : 'warning',
-        `Cumulative Layout Shift is ${runtime.cls.toFixed(2)}`,
+        worstCls > 0.25 ? 'critical' : 'warning',
+        `Cumulative Layout Shift is ${worstCls.toFixed(2)}`,
         'Visual instability can frustrate users and hurt Core Web Vitals performance.',
         [crawl.origin],
         'Reserve space for images and embeds, stabilize dynamic components, and avoid injecting content above existing content.',
@@ -1274,11 +1282,14 @@ function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
     );
   }
 
-  if (runtime.inpMs && runtime.inpMs > 200) {
+  const worstInpMs = [mobileRuntime.inpMs, desktopRuntime.inpMs].filter(
+    (value): value is number => typeof value === 'number'
+  ).sort((a, b) => b - a)[0] ?? null;
+  if (worstInpMs && worstInpMs > 200) {
     issues.push(
       issue(
-        runtime.inpMs > 500 ? 'critical' : 'warning',
-        `Interaction responsiveness is slow at ${Math.round(runtime.inpMs)}ms`,
+        worstInpMs > 500 ? 'critical' : 'warning',
+        `Interaction responsiveness is slow at ${Math.round(worstInpMs)}ms`,
         'Interaction latency suggests the page is doing too much work on the main thread during user input.',
         [crawl.origin],
         'Reduce long tasks, defer non-critical JavaScript, and simplify interactive UI work on the first screen.',
@@ -1317,17 +1328,37 @@ function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
   }
 
   const avgResponse = pages.length > 0 ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / pages.length) : 0;
-  const score = clamp(
+  const heuristicScore = clamp(
     100 -
       Math.floor(avgResponse / 120) -
       ratio(slowPages.length, Math.max(pages.length, 1)) * 28 -
       ratio(heavyPages.length, Math.max(pages.length, 1)) * 20 -
       ratio(pagesMissingViewport.length, Math.max(pages.length, 1)) * 30 -
       Math.max(0, avgRenderBlockingResources - 6) * 2 -
-      (runtime.lcpMs ? Math.max(0, (runtime.lcpMs - 2500) / 250) : 0) -
-      (runtime.cls ? Math.max(0, (runtime.cls - 0.1) * 100) : 0) -
-      (runtime.inpMs ? Math.max(0, (runtime.inpMs - 200) / 30) : 0)
+      (worstLcpMs ? Math.max(0, (worstLcpMs - 2500) / 250) : 0) -
+      (worstCls ? Math.max(0, (worstCls - 0.1) * 100) : 0) -
+      (worstInpMs ? Math.max(0, (worstInpMs - 200) / 30) : 0)
   );
+  const providerScores = [runtime.lighthouseScore.mobile, runtime.lighthouseScore.desktop].filter(
+    (value): value is number => typeof value === 'number' && !Number.isNaN(value)
+  );
+  const providerScore =
+    providerScores.length > 0
+      ? Math.round(providerScores.reduce((sum, value) => sum + value, 0) / providerScores.length)
+      : null;
+  let score =
+    providerScore !== null
+      ? clamp(providerScore * 0.65 + heuristicScore * 0.35)
+      : heuristicScore;
+
+  // Never surface an implausible zero for a measured run unless there is effectively no usable performance evidence.
+  if (score === 0 && pages.length > 0) {
+    if (providerScore !== null) {
+      score = Math.max(15, Math.round(providerScore * 0.5));
+    } else if (runtime.provider !== 'fallback') {
+      score = 20;
+    }
+  }
 
   return {
     score,
@@ -1354,6 +1385,10 @@ function buildPerformanceModule(crawl: CrawlResult): ModuleResult {
         ),
       provider: runtime.provider,
       lighthouseScore: runtime.lighthouseScore,
+      deviceReports: {
+        mobile: mobileRuntime,
+        desktop: desktopRuntime,
+      },
       lcpMs: runtime.lcpMs,
       inpMs: runtime.inpMs,
       cls: runtime.cls,

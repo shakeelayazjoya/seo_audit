@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { AuditIssue } from '@/lib/types';
-import { getSeverityColor } from '@/lib/types';
+import { compareIssuesByPriority, getPriorityScore, getSeverityColor } from '@/lib/types';
 import { motion } from 'framer-motion';
 
 interface FixPriorityMatrixProps {
@@ -16,10 +16,10 @@ const DOMAIN = 10;
 
 export function FixPriorityMatrix({ issues }: FixPriorityMatrixProps) {
   const quadrants = useMemo(() => {
-    const qw = issues.filter((i) => i.impactScore >= 5 && i.effortScore <= 5);
-    const mp = issues.filter((i) => i.impactScore >= 5 && i.effortScore > 5);
-    const fi = issues.filter((i) => i.impactScore < 5 && i.effortScore <= 5);
-    const lp = issues.filter((i) => i.impactScore < 5 && i.effortScore > 5);
+    const qw = issues.filter((i) => i.impactScore >= 5 && i.effortScore <= 5).sort(compareIssuesByPriority);
+    const mp = issues.filter((i) => i.impactScore >= 5 && i.effortScore > 5).sort(compareIssuesByPriority);
+    const fi = issues.filter((i) => i.impactScore < 5 && i.effortScore <= 5).sort(compareIssuesByPriority);
+    const lp = issues.filter((i) => i.impactScore < 5 && i.effortScore > 5).sort(compareIssuesByPriority);
     return { qw, mp, fi, lp };
   }, [issues]);
 
@@ -33,6 +33,7 @@ export function FixPriorityMatrix({ issues }: FixPriorityMatrixProps) {
       <p className="font-semibold">{issue.title}</p>
       <p className="text-muted-foreground">{issue.description}</p>
       <div className="flex gap-3 pt-1 border-t border-border/50">
+        <span>Priority: <strong>{getPriorityScore(issue)}</strong></span>
         <span>Impact: <strong>{issue.impactScore}</strong></span>
         <span>Effort: <strong>{issue.effortScore}</strong></span>
       </div>

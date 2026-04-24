@@ -86,30 +86,25 @@ function Header({
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {user ? (
-            <>
-              <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                My History
-              </Link>
-              {isAdmin && (
+            isAdmin ? (
+              <>
                 <Link href="/admin/commercial" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Admin
                 </Link>
-              )}
-              <button
-                onClick={() => onScrollTo('hero')}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Dashboard
-              </button>
-              <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground">
-                <User className="size-3.5" />
-                <span className="max-w-40 truncate">{displayName}</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => void onLogout()} disabled={loggingOut}>
-                <LogOut className="size-3.5 mr-1.5" />
-                {loggingOut ? 'Signing out...' : 'Logout'}
-              </Button>
-            </>
+              </>
+            ) : (
+              <>
+                <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  My History
+                </Link>
+                <button
+                  onClick={() => onScrollTo('hero')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Dashboard
+                </button>
+              </>
+            )
           ) : (
             <>
               <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -120,19 +115,35 @@ function Header({
               </Link>
             </>
           )}
-          {links.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => onScrollTo(l.id)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {l.label}
-            </button>
-          ))}
-          <Button size="sm" onClick={() => onScrollTo('hero')}>
-            <Search className="size-3.5 mr-1.5" />
-            Free Audit
-          </Button>
+          {user && (
+            <>
+              <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground">
+                <User className="size-3.5" />
+                <span className="max-w-40 truncate">{displayName}</span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => void onLogout()} disabled={loggingOut}>
+                <LogOut className="size-3.5 mr-1.5" />
+                {loggingOut ? 'Signing out...' : 'Logout'}
+              </Button>
+            </>
+          )}
+          {!isAdmin && (
+            <>
+              {links.map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => onScrollTo(l.id)}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {l.label}
+                </button>
+              ))}
+              <Button size="sm" onClick={() => onScrollTo('hero')}>
+                <Search className="size-3.5 mr-1.5" />
+                Free Audit
+              </Button>
+            </>
+          )}
         </nav>
 
         {/* Mobile menu toggle */}
@@ -152,19 +163,12 @@ function Header({
           >
             <div className="px-4 py-4 space-y-3">
               {user ? (
-                <>
-                  <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
-                    <User className="size-4" />
-                    <span className="truncate">{displayName}</span>
-                  </div>
-                  <Link
-                    href="/history"
-                    onClick={() => setMobileOpen(false)}
-                    className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                  >
-                    My History
-                  </Link>
-                  {isAdmin && (
+                isAdmin ? (
+                  <>
+                    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
+                      <User className="size-4" />
+                      <span className="truncate">{displayName}</span>
+                    </div>
                     <Link
                       href="/admin/commercial"
                       onClick={() => setMobileOpen(false)}
@@ -172,50 +176,83 @@ function Header({
                     >
                       Admin
                     </Link>
-                  )}
-                  <button
-                    onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}
-                    className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                  >
-                    Dashboard
-                  </button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      setMobileOpen(false);
-                      void onLogout();
-                    }}
-                    disabled={loggingOut}
-                  >
-                    <LogOut className="size-3.5 mr-1.5" />
-                    {loggingOut ? 'Signing out...' : 'Logout'}
-                  </Button>
-                </>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        void onLogout();
+                      }}
+                      disabled={loggingOut}
+                    >
+                      <LogOut className="size-3.5 mr-1.5" />
+                      {loggingOut ? 'Signing out...' : 'Logout'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
+                      <User className="size-4" />
+                      <span className="truncate">{displayName}</span>
+                    </div>
+                    <Link
+                      href="/history"
+                      onClick={() => setMobileOpen(false)}
+                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                    >
+                      My History
+                    </Link>
+                    <button
+                      onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}
+                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                    >
+                      Dashboard
+                    </button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        void onLogout();
+                      }}
+                      disabled={loggingOut}
+                    >
+                      <LogOut className="size-3.5 mr-1.5" />
+                      {loggingOut ? 'Signing out...' : 'Logout'}
+                    </Button>
+                  </>
+                )
               ) : (
                 <>
-                  <Link href="/login" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
-                    Login
-                  </Link>
+                  <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
+                    <Link href="/login" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
+                      Login
+                    </Link>
+                  </div>
                   <Link href="/signup" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
                     Sign Up
                   </Link>
                 </>
               )}
-              {links.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => { onScrollTo(l.id); setMobileOpen(false); }}
-                  className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                >
-                  {l.label}
-                </button>
-              ))}
-              <Button size="sm" className="w-full" onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}>
-                <Search className="size-3.5 mr-1.5" />
-                Free Audit
-              </Button>
+              {!isAdmin && (
+                <>
+                  {links.map((l) => (
+                    <button
+                      key={l.id}
+                      onClick={() => { onScrollTo(l.id); setMobileOpen(false); }}
+                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                  <Button size="sm" className="w-full" onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}>
+                    <Search className="size-3.5 mr-1.5" />
+                    Free Audit
+                  </Button>
+                </>
+              )}
             </div>
           </motion.div>
         )}

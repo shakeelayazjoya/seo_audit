@@ -1,21 +1,33 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Zap, TrendingUp } from 'lucide-react';
+import { Clock3, Flame, TrendingUp, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { AuditIssue } from '@/lib/types';
+import { compareIssuesByPriority, getPriorityScore } from '@/lib/types';
 import { motion } from 'framer-motion';
 
 interface QuickWinsProps {
   issues: AuditIssue[];
 }
 
+function getFixPreview(fixGuide: string) {
+  const preview = fixGuide.split(/(?<=[.!?])\s+/)[0]?.trim() ?? fixGuide.trim();
+  return preview.length > 90 ? `${preview.slice(0, 87)}...` : preview;
+}
+
+function getEffortLabel(effort: number) {
+  if (effort <= 2) return 'Fast fix';
+  if (effort <= 4) return 'This week';
+  return 'Short sprint';
+}
+
 export function QuickWins({ issues }: QuickWinsProps) {
   const quickWins = useMemo(() => {
     return issues
-      .filter((i) => i.impactScore >= 7 && i.effortScore <= 4)
-      .sort((a, b) => b.impactScore - a.impactScore)
+      .filter((i) => i.impactScore >= 6 && i.effortScore <= 5)
+      .sort(compareIssuesByPriority)
       .slice(0, 5);
   }, [issues]);
 
@@ -45,10 +57,19 @@ export function QuickWins({ issues }: QuickWinsProps) {
           Quick Wins
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          High impact, low effort fixes you can implement today
+          Fastest low-effort fixes most likely to move rankings, click-through, or conversions
         </p>
       </CardHeader>
       <CardContent>
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-900">
+            <Flame className="size-4" />
+            Top {Math.min(quickWins.length, 5)} fixes to act on first
+          </div>
+          <p className="mt-1 text-xs text-emerald-800">
+            If you only tackle a few items this week, start here. These are the clearest low-effort wins with immediate perceived value.
+          </p>
+        </div>
         <div className="space-y-2">
           {quickWins.map((issue, idx) => (
             <motion.div
@@ -62,14 +83,24 @@ export function QuickWins({ issues }: QuickWinsProps) {
                 {idx + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <h4 className="text-sm font-medium truncate">{issue.title}</h4>
                   <Badge className="shrink-0 bg-emerald-600 text-white border-0 text-[10px] px-1.5 py-0">
                     <TrendingUp className="size-2.5 mr-0.5" />
-                    {issue.impactScore}/10
+                    Impact {issue.impactScore}/10
+                  </Badge>
+                  <Badge className="shrink-0 bg-foreground text-background border-0 text-[10px] px-1.5 py-0">
+                    Priority {getPriorityScore(issue)}
+                  </Badge>
+                  <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0">
+                    <Clock3 className="size-2.5 mr-0.5" />
+                    {getEffortLabel(issue.effortScore)}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2">{issue.description}</p>
+                <p className="mt-2 text-[11px] font-medium text-emerald-900 line-clamp-2">
+                  Preview: {getFixPreview(issue.fixGuide)}
+                </p>
               </div>
             </motion.div>
           ))}

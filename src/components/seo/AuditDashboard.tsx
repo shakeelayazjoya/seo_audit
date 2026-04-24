@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
-import { AlertTriangle, ArrowLeft, Download, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Bot, Braces, Download, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -51,7 +51,9 @@ function formatMetricValue(value: unknown): string {
 }
 
 function ModuleMetrics({ data }: { data: Record<string, unknown> }) {
-  const entries = Object.entries(data).filter(([, value]) => value !== null && value !== undefined);
+  const entries = Object.entries(data).filter(
+    ([key, value]) => key !== 'deviceReports' && value !== null && value !== undefined
+  );
 
   if (entries.length === 0) return null;
 
@@ -69,9 +71,83 @@ function ModuleMetrics({ data }: { data: Record<string, unknown> }) {
   );
 }
 
+interface DevicePerformanceReport {
+  score: number | null;
+  lcpMs: number | null;
+  inpMs: number | null;
+  cls: number | null;
+  fcpMs: number | null;
+  ttfbMs: number | null;
+  renderBlockingResources: number | null;
+  thirdPartyBytes: number | null;
+  notes: string[];
+}
+
+function PerformanceDeviceTabs({ data }: { data: Record<string, unknown> }) {
+  const rawReports = data.deviceReports;
+  if (!rawReports || typeof rawReports !== 'object' || Array.isArray(rawReports)) return null;
+
+  const reports = rawReports as { mobile?: DevicePerformanceReport; desktop?: DevicePerformanceReport };
+  const devices: Array<{ key: 'mobile' | 'desktop'; label: string; report?: DevicePerformanceReport }> = [
+    { key: 'mobile', label: 'Mobile', report: reports.mobile },
+    { key: 'desktop', label: 'Desktop', report: reports.desktop },
+  ].filter((entry) => entry.report);
+
+  if (devices.length === 0) return null;
+
+  return (
+    <div className="mb-6 rounded-xl border bg-muted/20 p-4">
+      <div className="mb-3">
+        <h4 className="text-sm font-semibold">Device Performance Comparison</h4>
+        <p className="text-xs text-muted-foreground">Switch between mobile and desktop performance reports.</p>
+      </div>
+      <Tabs defaultValue={devices[0].key} className="w-full">
+        <TabsList className="mb-4 grid w-full grid-cols-2">
+          {devices.map((device) => (
+            <TabsTrigger key={device.key} value={device.key}>{device.label}</TabsTrigger>
+          ))}
+        </TabsList>
+        {devices.map((device) => {
+          const report = device.report;
+          if (!report) return null;
+          const metrics = [
+            ['Score', report.score],
+            ['LCP (ms)', report.lcpMs],
+            ['INP (ms)', report.inpMs],
+            ['CLS', report.cls],
+            ['FCP (ms)', report.fcpMs],
+            ['TTFB (ms)', report.ttfbMs],
+          ];
+
+          return (
+            <TabsContent key={device.key} value={device.key} className="mt-0">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {metrics.map(([label, value]) => (
+                  <div key={label} className="rounded-lg border bg-background p-3">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">{label}</p>
+                    <p className="text-sm font-medium">{formatMetricValue(value)}</p>
+                  </div>
+                ))}
+              </div>
+              {report.notes.length > 0 && (
+                <div className="mt-3 rounded-lg border border-dashed bg-background p-3">
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Notes</p>
+                  <p className="text-sm text-muted-foreground">{report.notes.join(' ')}</p>
+                </div>
+              )}
+            </TabsContent>
+          );
+        })}
+      </Tabs>
+    </div>
+  );
+}
+
 export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }: AuditDashboardProps) {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const moduleKeys = Object.keys(MODULE_CONFIG) as ModuleKey[];
+  const aiSeoModule = audit.aiSeo;
+  const schemaModule = audit.schema;
 
   const allIssues: AuditIssue[] = useMemo(() => {
     const issues: AuditIssue[] = [];
@@ -171,6 +247,66 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                     );
                   })}
                 </div>
+
+                {(aiSeoModule || schemaModule) && (
+                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {aiSeoModule && (
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              <Bot className="size-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Differentiator</p>
+                              <p className="text-sm font-semibold">AI SEO / E-E-A-T</p>
+                            </div>
+                          </div>
+                          <Badge
+                            style={{
+                              backgroundColor: `${getGradeColor(aiSeoModule.grade)}15`,
+                              color: getGradeColor(aiSeoModule.grade),
+                              borderColor: `${getGradeColor(aiSeoModule.grade)}30`,
+                            }}
+                          >
+                            {aiSeoModule.grade} - {aiSeoModule.score}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Visibility for AI search, entity clarity, content freshness, and authority signals.
+                        </p>
+                      </div>
+                    )}
+
+                    {schemaModule && (
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                              <Braces className="size-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Differentiator</p>
+                              <p className="text-sm font-semibold">Schema Markup</p>
+                            </div>
+                          </div>
+                          <Badge
+                            style={{
+                              backgroundColor: `${getGradeColor(schemaModule.grade)}15`,
+                              color: getGradeColor(schemaModule.grade),
+                              borderColor: `${getGradeColor(schemaModule.grade)}30`,
+                            }}
+                          >
+                            {schemaModule.grade} - {schemaModule.score}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Structured data readiness for rich results, entity understanding, and SERP enhancements.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -270,6 +406,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                               isPaid={isPaid}
                               onCTAClick={onUpgradeClick}
                             />
+                            {key === 'performance' && <PerformanceDeviceTabs data={mod.rawData} />}
                             <ModuleMetrics data={mod.rawData} />
                             <Separator className="mt-6" />
                           </motion.div>
@@ -311,6 +448,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                           <Progress value={mod.score} className="h-2" />
                         </div>
 
+                        {key === 'performance' && <PerformanceDeviceTabs data={mod.rawData} />}
                         <ModuleMetrics data={mod.rawData} />
 
                         <IssueAccordion
