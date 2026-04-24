@@ -3,6 +3,10 @@ import { saveLeadRecord } from '@/lib/audit-store';
 import { getSessionFromRequest } from '@/lib/auth';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { logAppEvent } from '@/lib/monitoring';
+import { generateAuditPdf } from '@/lib/report-pdf';
+import { sendEmail } from '@/lib/email';
+import { buildReportDeliveryEmail } from '@/lib/email-templates';
+import { db } from '@/lib/db';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -66,8 +70,52 @@ export async function POST(request: NextRequest) {
       userId: session?.user?.id ?? null,
     });
 
+    let emailDelivery: { success: boolean; provider: string; skippedReason?: string | null } | null = null;
+
+    if (auditId) {
+      try {
+        const { audit, modules, pdf, filename } = await generateAuditPdf(auditId);
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        const reportUrl = `${appUrl}/?audit=${audit.id}`;
+        const email = buildReportDeliveryEmail({
+          domain: audit.domain,
+          recipientEmail: trimmed,
+          overallScore: audit.overallScore,
+          reportUrl,
+          modules,
+        });
+
+        emailDelivery = await sendEmail({
+          to: trimmed,
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+          attachments: [
+            {
+              filename,
+              content: pdf,
+              contentType: 'application/pdf',
+            },
+          ],
+        });
+
+        await db.lead.update({
+          where: { id: lead.id },
+          data: {
+            status: emailDelivery.success ? 'emailed' : 'captured',
+          },
+        }).catch(() => {});
+      } catch (emailError) {
+        emailDelivery = {
+          success: false,
+          provider: 'report',
+          skippedReason: emailError instanceof Error ? emailError.message : 'Failed to prepare report email',
+        };
+      }
+    }
+
     await logAppEvent({
-      level: 'info',
+      level: emailDelivery?.success === false ? 'warn' : 'info',
       type: 'lead.captured',
       message: 'Lead captured',
       context: {
@@ -75,6 +123,7 @@ export async function POST(request: NextRequest) {
         domain: domain || null,
         auditId: auditId || null,
         source: leadSource,
+        emailDelivery,
       },
     });
 
@@ -85,6 +134,7 @@ export async function POST(request: NextRequest) {
         email: lead.email,
         source: lead.source,
         createdAt: lead.createdAt,
+        emailDelivery,
       },
       { status: 201 }
     );

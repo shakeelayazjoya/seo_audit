@@ -36,6 +36,7 @@ import {
 import { AuditDashboard } from '@/components/seo/AuditDashboard';
 import { LeadCaptureDialog } from '@/components/seo/LeadCaptureDialog';
 import { AuditHistory } from '@/components/seo/AuditHistory';
+import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,6 +71,7 @@ function Header({
     { label: 'FAQ', id: 'faq' },
   ];
   const displayName = user?.name?.trim() || user?.email || 'Account';
+  const isAdmin = user?.role === 'admin';
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -88,6 +90,11 @@ function Header({
               <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 My History
               </Link>
+              {isAdmin && (
+                <Link href="/admin/commercial" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={() => onScrollTo('hero')}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -157,6 +164,15 @@ function Header({
                   >
                     My History
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin/commercial"
+                      onClick={() => setMobileOpen(false)}
+                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
+                    >
+                      Admin
+                    </Link>
+                  )}
                   <button
                     onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}
                     className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
@@ -218,6 +234,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
   const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     fetch('/api/auth/session', { cache: 'no-store' })
@@ -233,6 +251,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
   }, []);
 
   useEffect(() => {
+    if (!sessionUser) {
+      return;
+    }
+
     fetch('/api/audits', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
@@ -258,8 +280,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
           setPastAudits(mapped);
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => { });
+  }, [sessionUser]);
 
   const handleLogout = useCallback(async () => {
     setLoggingOut(true);
@@ -276,6 +298,12 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
+
+    if (!sessionUser) {
+      setShowLoginModal(true);
+      return;
+    }
+
     onAnalyze(url.trim());
   };
 
@@ -291,6 +319,16 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Booking failed');
+
+        // If Calendly is loaded, use popup for premium feel
+        if (typeof window !== 'undefined' && (window as any).Calendly) {
+          (window as any).Calendly.initPopupWidget({
+            url: data.bookingUrl,
+          });
+          return;
+        }
+
+        // Fallback to redirect if Calendly script not ready
         window.location.href = data.url;
         return;
       }
@@ -467,10 +505,23 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
 
     return sum + modules.reduce((moduleSum, module) => moduleSum + (module?.issues.length ?? 0), 0);
   }, 0);
+  const checkoutStatus = searchParams.get('checkout');
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header onScrollTo={scrollTo} user={sessionUser} onLogout={handleLogout} loggingOut={loggingOut} />
+
+      {checkoutStatus && (
+        <section className="border-b bg-muted/40">
+          <div className="mx-auto max-w-4xl px-4 py-3 text-sm sm:px-6">
+            {checkoutStatus === 'success' ? (
+              <p className="text-emerald-700">Payment completed successfully. Your team can continue from your dashboard and inbox.</p>
+            ) : (
+              <p className="text-amber-700">Checkout was cancelled. Your saved checkout link can still be reopened from the email flow if mail delivery is configured.</p>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden border-b bg-gradient-to-b from-muted/50 to-background">
@@ -736,9 +787,9 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                     disabled={commerceLoading === 'diy' || commerceLoading === 'strategy' || commerceLoading === 'implementation'}
                   >
                     {commerceLoading &&
-                    ((commerceLoading === 'diy' && plan.name === 'DIY Plan') ||
-                      (commerceLoading === 'strategy' && plan.name === 'Strategy Plan') ||
-                      (commerceLoading === 'implementation' && plan.name === 'Full Implementation'))
+                      ((commerceLoading === 'diy' && plan.name === 'DIY Plan') ||
+                        (commerceLoading === 'strategy' && plan.name === 'Strategy Plan') ||
+                        (commerceLoading === 'implementation' && plan.name === 'Full Implementation'))
                       ? 'Opening...'
                       : plan.cta}
                     <ArrowRight className="size-3.5 ml-1.5" />
@@ -844,7 +895,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
       </section>
 
       {/* Recent Audits */}
-      {pastAudits.length > 0 && (
+      {sessionUser && pastAudits.length > 0 && (
         <section className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
           <AuditHistory audits={pastAudits} onSelectAudit={(a) => onAnalyze(a.id)} />
         </section>
@@ -859,9 +910,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                 These landing pages connect into the same live crawl, scoring, history, and PDF export pipeline.
               </p>
             </div>
-            <Button asChild variant="outline">
-              <Link href="/history">Open Audit History</Link>
-            </Button>
+            {sessionUser && (
+              <Button asChild variant="outline">
+                <Link href="/history">Open Audit History</Link>
+              </Button>
+            )}
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             {[
@@ -900,7 +953,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                 <li><button onClick={() => scrollTo('features')} className="hover:text-foreground transition-colors">Features</button></li>
                 <li><button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">Pricing</button></li>
                 <li><button onClick={() => scrollTo('faq')} className="hover:text-foreground transition-colors">FAQ</button></li>
-                <li><Link href="/history" className="hover:text-foreground transition-colors">Audit History</Link></li>
+                {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Audit History</Link></li>}
               </ul>
             </div>
             <div>
@@ -918,7 +971,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
                 <li><Link href="/ai-seo-audit" className="hover:text-foreground transition-colors">AI SEO Audit</Link></li>
                 <li><Link href="/local-seo-audit" className="hover:text-foreground transition-colors">Local SEO Audit</Link></li>
                 <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">SEO Audit Tool</Link></li>
-                <li><Link href="/history" className="hover:text-foreground transition-colors">Domain Trends</Link></li>
+                {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Domain Trends</Link></li>}
               </ul>
             </div>
           </div>
@@ -932,6 +985,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
           </div>
         </div>
       </footer>
+
+      <LoginPromptModal
+        open={showLoginModal}
+        onOpenChange={setShowLoginModal}
+      />
     </div>
   );
 }

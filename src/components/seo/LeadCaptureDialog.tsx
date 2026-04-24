@@ -27,6 +27,7 @@ export function LeadCaptureDialog({ open, onOpenChange, auditId, domain }: LeadC
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [deliveryMessage, setDeliveryMessage] = useState('Your comprehensive SEO audit report will be delivered to your inbox shortly.');
 
   const validateEmail = (value: string) => {
     if (!value) return 'Email is required';
@@ -47,14 +48,25 @@ export function LeadCaptureDialog({ open, onOpenChange, auditId, domain }: LeadC
     setError('');
 
     try {
-      await fetch('/api/lead/capture', {
+      const response = await fetch('/api/lead/capture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, auditId, domain }),
       });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
+      if (data.emailDelivery?.success) {
+        setDeliveryMessage('Your PDF report has been emailed successfully, and you can also reopen it from your dashboard anytime.');
+      } else if (data.emailDelivery?.skippedReason) {
+        setDeliveryMessage('Your lead was captured successfully. Email delivery is not configured yet, so use the dashboard export button for the PDF.');
+      } else {
+        setDeliveryMessage('Your comprehensive SEO audit report will be delivered to your inbox shortly.');
+      }
       setSuccess(true);
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -68,6 +80,7 @@ export function LeadCaptureDialog({ open, onOpenChange, auditId, domain }: LeadC
         setEmail('');
         setError('');
         setSuccess(false);
+        setDeliveryMessage('Your comprehensive SEO audit report will be delivered to your inbox shortly.');
       }, 200);
     }
   };
@@ -157,7 +170,7 @@ export function LeadCaptureDialog({ open, onOpenChange, auditId, domain }: LeadC
               </motion.div>
               <h3 className="text-lg font-semibold mb-2">Report on its way!</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                Your comprehensive SEO audit report will be delivered to your inbox shortly.
+                {deliveryMessage}
               </p>
               <Button onClick={handleClose}>Done</Button>
             </motion.div>

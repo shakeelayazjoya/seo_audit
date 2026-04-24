@@ -12,6 +12,7 @@ export interface SearchConsoleSnapshot {
 }
 
 const SEARCH_CONSOLE_BASE = 'https://searchconsole.googleapis.com/webmasters/v3';
+const GOOGLE_TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token';
 type SearchAnalyticsRow = {
   keys?: string[];
   clicks?: number;
@@ -19,6 +20,16 @@ type SearchAnalyticsRow = {
   ctr?: number;
   position?: number;
 };
+
+type OAuthTokenResponse = {
+  access_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  error?: string;
+  error_description?: string;
+};
+
+let cachedAccessToken: { token: string; expiresAt: number } | null = null;
 
 function dateDaysAgo(days: number): string {
   const target = new Date();
@@ -35,9 +46,83 @@ function candidateProperties(domain: string): string[] {
   ];
 }
 
-async function authorizedFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const token = process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN;
-  if (!token) throw new Error('Missing GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN');
+function getStaticAccessToken() {
+  const token = process.env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN?.trim();
+  return token ? token : null;
+}
+
+function getRefreshTokenConfig() {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN?.trim();
+
+  if (!clientId || !clientSecret || !refreshToken) {
+    return null;
+  }
+
+  return { clientId, clientSecret, refreshToken };
+}
+
+async function refreshSearchConsoleAccessToken(): Promise<string> {
+  const config = getRefreshTokenConfig();
+  if (!config) {
+    throw new Error('Missing Search Console OAuth refresh-token configuration');
+  }
+
+  const now = Date.now();
+  if (cachedAccessToken && cachedAccessToken.expiresAt > now + 60_000) {
+    return cachedAccessToken.token;
+  }
+
+  const form = new URLSearchParams();
+  form.set('client_id', config.clientId);
+  form.set('client_secret', config.clientSecret);
+  form.set('refresh_token', config.refreshToken);
+  form.set('grant_type', 'refresh_token');
+
+  const response = await fetch(GOOGLE_TOKEN_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: form.toString(),
+    signal: AbortSignal.timeout(20000),
+  });
+
+  const payload = (await response.json().catch(() => ({}))) as OAuthTokenResponse;
+  if (!response.ok || !payload.access_token) {
+    throw new Error(
+      payload.error_description ||
+      payload.error ||
+      `Search Console token refresh failed with ${response.status}`
+    );
+  }
+
+  cachedAccessToken = {
+    token: payload.access_token,
+    expiresAt: now + Math.max(60, payload.expires_in ?? 3600) * 1000,
+  };
+
+  return cachedAccessToken.token;
+}
+
+async function getSearchConsoleAccessToken(forceRefresh = false): Promise<string> {
+  if (!forceRefresh) {
+    const staticToken = getStaticAccessToken();
+    if (staticToken) {
+      return staticToken;
+    }
+
+    if (cachedAccessToken && cachedAccessToken.expiresAt > Date.now() + 60_000) {
+      return cachedAccessToken.token;
+    }
+  }
+
+  return refreshSearchConsoleAccessToken();
+}
+
+async function authorizedFetch<T>(url: string, init?: RequestInit, hasRetried = false): Promise<T> {
+  const token = await getSearchConsoleAccessToken(hasRetried);
 
   const response = await fetch(url, {
     ...init,
@@ -48,6 +133,11 @@ async function authorizedFetch<T>(url: string, init?: RequestInit): Promise<T> {
     },
     signal: AbortSignal.timeout(20000),
   });
+
+  if (response.status === 401 && !hasRetried && getRefreshTokenConfig()) {
+    cachedAccessToken = null;
+    return authorizedFetch<T>(url, init, true);
+  }
 
   if (!response.ok) {
     throw new Error(`Search Console request failed with ${response.status}`);
