@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "SEO Audit Platform — Free Website SEO Analysis Tool",
   description:
     "Get a comprehensive SEO audit across 7 dimensions including Technical SEO, Core Web Vitals, On-Page, CRO, Local SEO, AI/E-E-A-T, and Schema Markup. Free instant analysis with prioritized action items.",
+  viewport: "width=device-width, initial-scale=1",
   keywords: [
     "SEO audit",
     "SEO analysis tool",

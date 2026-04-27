@@ -17,9 +17,9 @@ interface DomainHistoryDashboardProps {
 export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps) {
   if (history.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
+      <Card className="border border-white/10 bg-white/5 backdrop-blur-2xl">
+        <CardContent className="pt-6 text-slate-200">
+          <p className="text-sm text-slate-300">
             No completed audits have been saved yet. Run a site audit to start building domain history.
           </p>
         </CardContent>
@@ -34,12 +34,12 @@ export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps)
         const gradeColor = getGradeColor(grade);
 
         return (
-          <Card key={entry.domain} className="overflow-hidden">
-            <CardHeader className="border-b bg-muted/30">
+          <Card key={entry.domain} className="overflow-hidden border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl">
+            <CardHeader className="border-b border-white/10 bg-white/10">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-lg">{entry.domain}</CardTitle>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <CardTitle className="text-lg text-white">{entry.domain}</CardTitle>
+                  <p className="mt-1 text-sm text-slate-300">
                     Last audited {format(new Date(entry.lastAuditedAt), 'MMM d, yyyy')}
                   </p>
                 </div>
@@ -63,42 +63,42 @@ export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps)
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+            <CardContent className="space-y-6 pt-6 text-slate-200">
               <div className="grid gap-3 sm:grid-cols-4">
-                <div className="rounded-lg border bg-muted/20 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
                     <BarChart3 className="size-3.5" />
                     Audits
                   </div>
-                  <p className="text-2xl font-semibold">{entry.auditCount}</p>
+                  <p className="text-2xl font-semibold text-white">{entry.auditCount}</p>
                 </div>
-                <div className="rounded-lg border bg-muted/20 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
                     <TrendingUp className="size-3.5" />
                     Best Score
                   </div>
-                  <p className="text-2xl font-semibold">{entry.bestScore}</p>
+                  <p className="text-2xl font-semibold text-white">{entry.bestScore}</p>
                 </div>
-                <div className="rounded-lg border bg-muted/20 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
                     <BarChart3 className="size-3.5" />
                     Average
                   </div>
-                  <p className="text-2xl font-semibold">{entry.averageScore}</p>
+                  <p className="text-2xl font-semibold text-white">{entry.averageScore}</p>
                 </div>
-                <div className="rounded-lg border bg-muted/20 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
                     <Clock3 className="size-3.5" />
                     Latest Grade
                   </div>
-                  <p className="text-2xl font-semibold">{grade}</p>
+                  <p className="text-2xl font-semibold text-white">{grade}</p>
                 </div>
               </div>
 
               {entry.history.length > 1 ? (
                 <AuditTrendChart history={entry.history} />
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-slate-300">
                   Trend insights will appear after this domain has been audited at least twice.
                 </p>
               )}
