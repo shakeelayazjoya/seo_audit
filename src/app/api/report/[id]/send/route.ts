@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionFromRequest } from '@/lib/auth';
-import { generateAuditPdf } from '@/lib/report-pdf';
+import { persistAuditPdfReport } from '@/lib/report-pdf';
 import { sendEmail } from '@/lib/email';
 import { buildReportDeliveryEmail } from '@/lib/email-templates';
 import { logAppEvent } from '@/lib/monitoring';
@@ -24,7 +24,7 @@ export async function POST(
       return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 });
     }
 
-    const { audit, modules, pdf, filename } = await generateAuditPdf(id);
+    const { audit, modules, pdf, filename, cloudinary } = await persistAuditPdfReport(id);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
     const reportUrl = `${appUrl}/?audit=${audit.id}`;
     const email = buildReportDeliveryEmail({
@@ -57,6 +57,7 @@ export async function POST(
         auditId: audit.id,
         email: targetEmail,
         provider: delivery.provider,
+        cloudinaryUrl: cloudinary.secureUrl,
         skippedReason: delivery.skippedReason ?? null,
       },
     });

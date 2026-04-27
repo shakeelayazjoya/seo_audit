@@ -7,6 +7,7 @@ import {
   saveAuditRecord,
 } from './audit-store.ts';
 import { logAppEvent } from './monitoring.ts';
+import { persistAuditPdfReport } from './report-pdf.ts';
 
 const WORKER_AUDIT_TIMEOUT_MS = 150000;
 const IDLE_SLEEP_MS = 4000;
@@ -112,6 +113,32 @@ export async function processOneAuditJob() {
       isPartial: partial.isPartial,
       partialReason: partial.partialReason,
     });
+
+    try {
+      const storedReport = await persistAuditPdfReport(job.auditId);
+      await logAppEvent({
+        level: 'info',
+        type: 'audit.report_stored',
+        message: 'Audit PDF stored in Cloudinary',
+        context: {
+          auditId: job.auditId,
+          domain: job.domain,
+          publicId: storedReport.cloudinary.publicId,
+          secureUrl: storedReport.cloudinary.secureUrl,
+        },
+      });
+    } catch (storageError) {
+      await logAppEvent({
+        level: 'warn',
+        type: 'audit.report_storage_failed',
+        message: 'Audit PDF storage in Cloudinary failed',
+        context: {
+          auditId: job.auditId,
+          domain: job.domain,
+          error: storageError instanceof Error ? storageError.message : 'Unknown storage error',
+        },
+      });
+    }
 
     await logAppEvent({
       level: partial.isPartial ? 'warn' : 'info',

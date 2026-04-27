@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
         requestId: record.id,
         domain,
         auditId,
+        userId: session?.user.id ?? null,
+        userEmail: session?.user.email ?? null,
         emailDelivery,
       },
     });

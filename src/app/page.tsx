@@ -1132,7 +1132,10 @@ export default function Home() {
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
   const [inputDomain, setInputDomain] = useState('');
   const [showLeadDialog, setShowLeadDialog] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
+  const isDevPaidPreview =
+    process.env.NODE_ENV !== 'production' &&
+    (searchParams.get('preview') === 'paid' || searchParams.get('fullFixes') === '1');
+  const isPaid = process.env.NODE_ENV !== 'production' || isDevPaidPreview;
 
   const handleAnalyze = useCallback(async (domainOrId: string) => {
     setInputDomain(domainOrId);

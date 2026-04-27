@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import type { AuditModules } from '@/lib/audit-engine';
 import { getAuditRecord } from '@/lib/audit-store';
+import { uploadLatestAuditPdf } from '@/lib/cloudinary';
 
 const require = createRequire(import.meta.url);
 
@@ -211,4 +212,18 @@ export async function generateAuditPdf(auditId: string) {
   } finally {
     await browser.close();
   }
+}
+
+export async function persistAuditPdfReport(auditId: string) {
+  const report = await generateAuditPdf(auditId);
+  const cloudinary = await uploadLatestAuditPdf({
+    domain: report.audit.domain,
+    filename: report.filename,
+    pdf: report.pdf,
+  });
+
+  return {
+    ...report,
+    cloudinary,
+  };
 }

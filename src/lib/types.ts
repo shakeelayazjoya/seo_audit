@@ -15,6 +15,75 @@ export interface AuditIssue {
   effortScore: number;
 }
 
+export type RecommendationFramework = 'vanilla' | 'react' | 'next';
+
+export type RecommendationFrameworkMode = RecommendationFramework | 'auto';
+
+export interface RecommendationSnippet {
+  framework: RecommendationFramework;
+  title: string;
+  language: string;
+  code: string;
+}
+
+export interface IssueRecommendation {
+  id: string;
+  category: 'performance' | 'seo' | 'schema' | 'content' | 'cro' | 'technical';
+  headline: string;
+  explanation: string;
+  bestPractice: string;
+  snippets: RecommendationSnippet[];
+}
+
+export type AIFixProvider = 'openai' | 'gemini' | 'deepseek';
+
+export interface AIFixCodeContextFile {
+  path: string;
+  score: number;
+  startLine: number;
+  endLine: number;
+  excerpt: string;
+}
+
+export interface AIFixApplyLocation {
+  path: string;
+  startLine: number;
+  endLine: number;
+  reason: string;
+}
+
+export interface AIFixGeneratedSnippet {
+  title: string;
+  language: string;
+  code: string;
+  rationale: string;
+}
+
+export interface AIFixTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export interface AIFixResponse {
+  provider: AIFixProvider;
+  model: string;
+  framework: RecommendationFramework;
+  detectedFramework?: RecommendationFramework;
+  frameworkReason?: string;
+  summary: string;
+  rootCause: string;
+  implementationSteps: string[];
+  validationSteps: string[];
+  warnings: string[];
+  touchedFiles: string[];
+  applyLocations: AIFixApplyLocation[];
+  codeSnippet: AIFixGeneratedSnippet;
+  retrievedContext: AIFixCodeContextFile[];
+  usage?: AIFixTokenUsage;
+  fallbackUsed?: boolean;
+}
+
 export interface AuditData {
   id: string;
   domain: string;
