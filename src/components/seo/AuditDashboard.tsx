@@ -88,10 +88,13 @@ function PerformanceDeviceTabs({ data }: { data: Record<string, unknown> }) {
   if (!rawReports || typeof rawReports !== 'object' || Array.isArray(rawReports)) return null;
 
   const reports = rawReports as { mobile?: DevicePerformanceReport; desktop?: DevicePerformanceReport };
-  const devices: Array<{ key: 'mobile' | 'desktop'; label: string; report?: DevicePerformanceReport }> = [
-    { key: 'mobile', label: 'Mobile', report: reports.mobile },
-    { key: 'desktop', label: 'Desktop', report: reports.desktop },
-  ].filter((entry) => entry.report);
+  const devices = [
+    { key: 'mobile' as const, label: 'Mobile', report: reports.mobile },
+    { key: 'desktop' as const, label: 'Desktop', report: reports.desktop },
+  ].filter(
+    (entry): entry is { key: 'mobile' | 'desktop'; label: string; report: DevicePerformanceReport } =>
+      Boolean(entry.report)
+  );
 
   if (devices.length === 0) return null;
 
@@ -202,6 +205,20 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                 <p className="font-medium text-amber-900">This audit has degraded coverage</p>
                 <p className="text-sm text-amber-800">
                   {audit.partialReason ?? audit.errorMessage ?? 'Some crawl or performance checks were incomplete, so treat the score as directional.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isPaid && process.env.NODE_ENV !== 'production' && (
+          <Card className="mb-6 border-emerald-300 bg-emerald-50">
+            <CardContent className="flex items-start gap-3 pt-6">
+              <ShieldCheck className="mt-0.5 size-5 text-emerald-600" />
+              <div>
+                <p className="font-medium text-emerald-900">Developer fix recommendations are unlocked</p>
+                <p className="text-sm text-emerald-800">
+                  Expand any issue below to see framework-specific code fixes for Vanilla JS, React.js, and Next.js.
                 </p>
               </div>
             </CardContent>
@@ -403,6 +420,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                             </div>
                             <IssueAccordion
                               issues={mod.issues}
+                              domain={audit.domain}
                               isPaid={isPaid}
                               onCTAClick={onUpgradeClick}
                             />
@@ -453,6 +471,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
 
                         <IssueAccordion
                           issues={mod.issues}
+                          domain={audit.domain}
                           isPaid={isPaid}
                           onCTAClick={onUpgradeClick}
                         />

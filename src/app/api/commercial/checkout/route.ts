@@ -112,6 +112,8 @@ export async function POST(request: NextRequest) {
         requestId: record.id,
         plan,
         sessionId: stripeSession.id,
+        userId: session?.user.id ?? null,
+        userEmail: session?.user.email ?? null,
         emailDelivery,
       },
     });

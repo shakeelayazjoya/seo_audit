@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ArrowLeft, CreditCard, FileText, CalendarDays, Mail, Users } from 'lucide-react';
+import { ArrowLeft, CreditCard, CalendarDays, Mail, Users, Bot, Activity, UserCheck, Sparkles } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { getSessionFromRequest } from '@/lib/auth';
 import { getAdminCommercialOverview } from '@/lib/admin-commercial';
@@ -61,18 +61,39 @@ export default async function AdminCommercialPage() {
           <Badge variant="outline" className="mb-4">Admin</Badge>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Commercial management</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            Monitor leads, report email sends, strategy bookings, and checkout activity from one place.
+            Monitor leads, report email sends, strategy bookings, checkout activity, auth usage, and AI consumption from one place.
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {[
             { label: 'Leads', value: overview.summary.leadCount, icon: Users },
             { label: 'Report Sends', value: overview.summary.reportSendCount, icon: Mail },
             { label: 'Bookings', value: overview.summary.bookingCount, icon: CalendarDays },
             { label: 'Checkouts', value: overview.summary.checkoutCount, icon: CreditCard },
+            { label: 'Users', value: overview.summary.userCount, icon: UserCheck },
+          ].map((item) => (
+            <Card key={item.label}>
+              <CardContent className="flex items-center justify-between pt-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">{item.label}</p>
+                  <p className="mt-1 text-3xl font-semibold">{item.value}</p>
+                </div>
+                <item.icon className="size-8 text-primary" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {[
+            { label: 'Active Sessions', value: overview.summary.activeSessionCount, icon: Activity },
+            { label: 'Logins Logged', value: overview.summary.loginCount, icon: UserCheck },
+            { label: 'Signups Logged', value: overview.summary.signupCount, icon: Sparkles },
+            { label: 'AI Calls', value: overview.summary.aiCallCount, icon: Bot },
+            { label: 'AI Tokens', value: overview.summary.aiTokenTotal.toLocaleString(), icon: Bot },
           ].map((item) => (
             <Card key={item.label}>
               <CardContent className="flex items-center justify-between pt-6">
@@ -87,6 +108,125 @@ export default async function AdminCommercialPage() {
         </div>
 
         <div className="mt-8 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Admin Analytics Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="rounded-lg border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Authentication</p>
+                  <div className="space-y-2 text-sm">
+                    <p>Recent logins (24h): <span className="font-semibold">{overview.auth.recentLogins24h}</span></p>
+                    <p>Recent signups (24h): <span className="font-semibold">{overview.auth.recentSignups24h}</span></p>
+                    <p>Active sessions: <span className="font-semibold">{overview.summary.activeSessionCount}</span></p>
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">AI Usage</p>
+                  <div className="space-y-2 text-sm">
+                    <p>Total calls: <span className="font-semibold">{overview.aiUsage.totalCalls}</span></p>
+                    <p>Input tokens: <span className="font-semibold">{overview.aiUsage.totalInputTokens.toLocaleString()}</span></p>
+                    <p>Output tokens: <span className="font-semibold">{overview.aiUsage.totalOutputTokens.toLocaleString()}</span></p>
+                    <p>Total tokens: <span className="font-semibold">{overview.aiUsage.totalTokens.toLocaleString()}</span></p>
+                  </div>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Commercial</p>
+                  <div className="space-y-2 text-sm">
+                    <p>Subscription intents: <span className="font-semibold">{overview.summary.subscriptionIntentCount}</span></p>
+                    <p>Lead captures: <span className="font-semibold">{overview.summary.leadCount}</span></p>
+                    <p>Report sends: <span className="font-semibold">{overview.summary.reportSendCount}</span></p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {overview.users.length === 0 ? (
+                <EmptyState message="No users found." />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Last Login</TableHead>
+                      <TableHead>Active Sessions</TableHead>
+                      <TableHead>Audits</TableHead>
+                      <TableHead>AI Calls</TableHead>
+                      <TableHead>AI Tokens</TableHead>
+                      <TableHead>Checkouts</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {overview.users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.email}</TableCell>
+                        <TableCell><Badge variant="outline">{user.role}</Badge></TableCell>
+                        <TableCell>{user.lastLoginAt ? formatDate(user.lastLoginAt) : '—'}</TableCell>
+                        <TableCell>{user.activeSessionCount}</TableCell>
+                        <TableCell>{user.auditCount}</TableCell>
+                        <TableCell>{user.aiCallCount}</TableCell>
+                        <TableCell>{user.aiTokenTotal.toLocaleString()}</TableCell>
+                        <TableCell>{user.checkoutCount}</TableCell>
+                        <TableCell>{formatDate(user.createdAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">AI Calls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {overview.aiCalls.length === 0 ? (
+                <EmptyState message="No AI fix calls have been logged yet." />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Provider</TableHead>
+                      <TableHead>Framework</TableHead>
+                      <TableHead>Domain</TableHead>
+                      <TableHead>Issue</TableHead>
+                      <TableHead>Input</TableHead>
+                      <TableHead>Output</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {overview.aiCalls.map((call) => (
+                      <TableRow key={call.id}>
+                        <TableCell className="font-medium">{call.email ?? 'Guest'}</TableCell>
+                        <TableCell>{call.provider ?? '—'}</TableCell>
+                        <TableCell>{call.framework ?? '—'}</TableCell>
+                        <TableCell className="max-w-[180px] truncate">{call.domain ?? '—'}</TableCell>
+                        <TableCell className="max-w-[220px] truncate">{call.issueTitle ?? '—'}</TableCell>
+                        <TableCell>{call.inputTokens.toLocaleString()}</TableCell>
+                        <TableCell>{call.outputTokens.toLocaleString()}</TableCell>
+                        <TableCell>{call.totalTokens.toLocaleString()}</TableCell>
+                        <TableCell>{formatDate(call.createdAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Leads</CardTitle>

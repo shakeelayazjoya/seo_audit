@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { destroySession, getSessionCookieName } from '@/lib/auth';
+import { logAppEvent } from '@/lib/monitoring';
 
 export async function POST(request: NextRequest) {
   const token = request.cookies.get(getSessionCookieName())?.value;
   if (token) {
     await destroySession(token);
   }
+
+  await logAppEvent({
+    level: 'info',
+    type: 'auth.logout',
+    message: 'User logged out',
+  });
 
   const response = NextResponse.json({ success: true });
   response.cookies.set(getSessionCookieName(), '', {

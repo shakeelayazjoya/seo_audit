@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateAuditPdf } from '@/lib/report-pdf';
+import { persistAuditPdfReport } from '@/lib/report-pdf';
 
 export const runtime = 'nodejs';
 
@@ -9,12 +9,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const { pdf, filename } = await generateAuditPdf(id);
+    const { pdf, filename, cloudinary } = await persistAuditPdfReport(id);
 
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${filename}"`,
+        'X-Cloudinary-Url': cloudinary.secureUrl,
+        'X-Cloudinary-Public-Id': cloudinary.publicId,
       },
     });
   } catch (error) {

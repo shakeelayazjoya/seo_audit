@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
-import { AlertTriangle, AlertCircle, Lightbulb, Lock, ExternalLink } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AlertTriangle, AlertCircle, Lightbulb, Lock, ExternalLink, Bot } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -10,12 +10,16 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AIFixAssistantDialog } from '@/components/seo/AIFixAssistantDialog';
+import { DeveloperRecommendation } from '@/components/seo/DeveloperRecommendation';
+import { getIssueRecommendation } from '@/lib/recommendations';
 import type { AuditIssue } from '@/lib/types';
 import { compareIssuesByPriority, getPriorityScore, getSeverityColor } from '@/lib/types';
 import { motion } from 'framer-motion';
 
 interface IssueAccordionProps {
   issues: AuditIssue[];
+  domain?: string;
   isPaid?: boolean;
   onCTAClick?: () => void;
 }
@@ -34,7 +38,9 @@ function getFixPreview(fixGuide: string) {
   return preview.length > 120 ? `${preview.slice(0, 117)}...` : preview;
 }
 
-export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAccordionProps) {
+export function IssueAccordion({ issues, domain = '', isPaid = false, onCTAClick }: IssueAccordionProps) {
+  const [selectedIssue, setSelectedIssue] = useState<AuditIssue | null>(null);
+  const [assistantOpen, setAssistantOpen] = useState(false);
   const groups = useMemo((): SeverityGroup[] => {
     const critical = issues.filter((i) => i.severity === 'critical');
     const warnings = issues.filter((i) => i.severity === 'warning');
@@ -139,9 +145,27 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
 
                   {/* Fix Guide */}
                   {isPaid ? (
-                    <div className="rounded-md bg-muted/50 p-3 text-sm">
-                      <p className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">Fix Guide</p>
-                      <p>{issue.fixGuide}</p>
+                    <div className="space-y-3">
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => {
+                            setSelectedIssue(issue);
+                            setAssistantOpen(true);
+                          }}
+                        >
+                          <Bot className="size-3.5" />
+                          AI Code Fix
+                        </Button>
+                      </div>
+                      <div className="rounded-md bg-muted/50 p-3 text-sm">
+                        <p className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">Fix Guide</p>
+                        <p>{issue.fixGuide}</p>
+                      </div>
+                      <DeveloperRecommendation recommendation={getIssueRecommendation(issue)} />
                     </div>
                   ) : (
                     <div className="rounded-md border border-dashed bg-muted/30 p-3">
@@ -169,6 +193,12 @@ export function IssueAccordion({ issues, isPaid = false, onCTAClick }: IssueAcco
           </AccordionContent>
         </AccordionItem>
       ))}
+      <AIFixAssistantDialog
+        open={assistantOpen}
+        onOpenChange={setAssistantOpen}
+        issue={selectedIssue}
+        domain={domain}
+      />
     </Accordion>
   );
 }
