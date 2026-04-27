@@ -40,7 +40,14 @@ import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 // ============================================================
 // Header / Navigation
 // ============================================================
@@ -70,188 +77,194 @@ function Header({
     { label: 'Pricing', id: 'pricing' },
     { label: 'FAQ', id: 'faq' },
   ];
+
   const displayName = user?.name?.trim() || user?.email || 'Account';
+  const initials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   const isAdmin = user?.role === 'admin';
 
-  return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+   return (
+    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-bold text-lg">
+
+        {/* Logo */}
+        <div className="flex items-center gap-2 font-semibold text-lg">
           <div className="size-8 rounded-lg bg-primary flex items-center justify-center">
             <BarChart3 className="size-4 text-primary-foreground" />
           </div>
-          <span>SEO Audit</span>
+          SEO Audit
         </div>
 
-        {/* Desktop nav */}
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {user ? (
-            isAdmin ? (
-              <>
-                <Link href="/admin/commercial" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Admin
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/history" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  My History
-                </Link>
-                <button
-                  onClick={() => onScrollTo('hero')}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Dashboard
-                </button>
-              </>
-            )
-          ) : (
+
+          {/* Public Links */}
+          {!isAdmin &&
+            links.map((l) => (
+              <button
+                key={l.id}
+                onClick={() => onScrollTo(l.id)}
+                className="text-sm text-muted-foreground hover:text-foreground transition"
+              >
+                {l.label}
+              </button>
+            ))}
+
+          {/* Auth Links */}
+          {!user && (
             <>
-              <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
                 Login
               </Link>
-              <Link href="/signup" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Sign Up
+              <Link href="/signup">
+                <Button size="sm">Sign Up</Button>
               </Link>
             </>
           )}
-          {user && (
+
+          {/* ✅ Logged-in Navigation */}
+          {user && !isAdmin && (
             <>
-              <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground">
-                <User className="size-3.5" />
-                <span className="max-w-40 truncate">{displayName}</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => void onLogout()} disabled={loggingOut}>
-                <LogOut className="size-3.5 mr-1.5" />
-                {loggingOut ? 'Signing out...' : 'Logout'}
-              </Button>
+              <button
+                onClick={() => onScrollTo('hero')}
+                className="text-sm font-medium hover:text-primary transition"
+              >
+                Dashboard
+              </button>
+
+              <Link
+                href="/history"
+                className="text-sm font-medium hover:text-primary transition"
+              >
+                My History
+              </Link>
             </>
           )}
+
+          {/* Admin */}
+          {user && isAdmin && (
+            <Link href="/admin/commercial" className="text-sm font-medium">
+              Admin
+            </Link>
+          )}
+
+          {/* CTA */}
           {!isAdmin && (
-            <>
-              {links.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => onScrollTo(l.id)}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {l.label}
+            <Button size="sm" onClick={() => onScrollTo('hero')}>
+              <Search className="size-4 mr-1" />
+              Free Audit
+            </Button>
+          )}
+
+          {/* ✅ Profile Dropdown (ONLY account + logout) */}
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 rounded-full border px-2 py-1 hover:bg-muted transition">
+                  <Avatar className="size-7">
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
                 </button>
-              ))}
-              <Button size="sm" onClick={() => onScrollTo('hero')}>
-                <Search className="size-3.5 mr-1.5" />
-                Free Audit
-              </Button>
-            </>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-52">
+
+                <div className="px-3 py-2">
+                  <p className="text-sm font-medium">{displayName}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                </div>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem disabled>
+                  <User className="size-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  onClick={() => void onLogout()}
+                  disabled={loggingOut}
+                  className="text-red-500"
+                >
+                  <LogOut className="size-4 mr-2" />
+                  {loggingOut ? 'Signing out...' : 'Logout'}
+                </DropdownMenuItem>
+
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </nav>
 
-        {/* Mobile menu toggle */}
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        {/* Mobile Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X /> : <Menu />}
         </Button>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden border-t"
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
+            className="md:hidden border-t overflow-hidden"
           >
-            <div className="px-4 py-4 space-y-3">
-              {user ? (
-                isAdmin ? (
-                  <>
-                    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
-                      <User className="size-4" />
-                      <span className="truncate">{displayName}</span>
-                    </div>
-                    <Link
-                      href="/admin/commercial"
-                      onClick={() => setMobileOpen(false)}
-                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                    >
-                      Admin
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        setMobileOpen(false);
-                        void onLogout();
-                      }}
-                      disabled={loggingOut}
-                    >
-                      <LogOut className="size-3.5 mr-1.5" />
-                      {loggingOut ? 'Signing out...' : 'Logout'}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
-                      <User className="size-4" />
-                      <span className="truncate">{displayName}</span>
-                    </div>
-                    <Link
-                      href="/history"
-                      onClick={() => setMobileOpen(false)}
-                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                    >
-                      My History
-                    </Link>
-                    <button
-                      onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}
-                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                    >
-                      Dashboard
-                    </button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        setMobileOpen(false);
-                        void onLogout();
-                      }}
-                      disabled={loggingOut}
-                    >
-                      <LogOut className="size-3.5 mr-1.5" />
-                      {loggingOut ? 'Signing out...' : 'Logout'}
-                    </Button>
-                  </>
-                )
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
-                    <Link href="/login" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
-                      Login
-                    </Link>
+            <div className="p-4 space-y-3">
+
+              {user && (
+                <div className="flex items-center gap-2 border rounded-lg p-2">
+                  <Avatar className="size-8">
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
                   </div>
-                  <Link href="/signup" className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground">
-                    Sign Up
-                  </Link>
+                </div>
+              )}
+
+              {!user && (
+                <>
+                  <Link href="/login">Login</Link>
+                  <Link href="/signup">Sign Up</Link>
                 </>
               )}
-              {!isAdmin && (
+
+              {/* Logged-in Links */}
+              {user && !isAdmin && (
                 <>
-                  {links.map((l) => (
-                    <button
-                      key={l.id}
-                      onClick={() => { onScrollTo(l.id); setMobileOpen(false); }}
-                      className="block w-full text-left text-sm py-2 hover:text-foreground text-muted-foreground"
-                    >
-                      {l.label}
-                    </button>
-                  ))}
-                  <Button size="sm" className="w-full" onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}>
-                    <Search className="size-3.5 mr-1.5" />
-                    Free Audit
-                  </Button>
+                  <button onClick={() => onScrollTo('hero')}>
+                    Dashboard
+                  </button>
+                  <Link href="/history">My History</Link>
                 </>
+              )}
+
+              {user && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => void onLogout()}
+                >
+                  Logout
+                </Button>
               )}
             </div>
           </motion.div>
