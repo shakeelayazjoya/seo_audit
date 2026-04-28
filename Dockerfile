@@ -18,9 +18,6 @@ RUN npm run db:generate
 # Build Next.js app
 RUN npm run build
 
-# Debug build output layout
-RUN ls -la /app/.next && ls -la /app/.next/standalone && ls -la /app/.next/standalone/.next/static
-
 # ----------------------------
 # 2. Production stage
 # ----------------------------
@@ -30,15 +27,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install only production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-# Copy built app
-COPY --from=builder /app ./
+# Copy only the runtime output from the builder
+COPY --from=builder /app/.next .next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone .next/standalone
 
 # Expose Next.js port
 EXPOSE 3000
 
-# Start Next.js
-CMD ["npm", "start"]
+# Start Next.js standalone server
+CMD ["node", ".next/standalone/server.js"]
