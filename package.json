@@ -1,14 +1,16 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
+ "name": "All In One SEO Audit Tool",
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 > dev.log 2>&1",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node .next/standalone/server.js",
+    "lint": "eslint .",
+
     "worker": "node scripts/audit-worker.mts",
     "worker:once": "node scripts/audit-worker.mts --once",
-    "build": "next build --webpack && powershell -NoProfile -Command \"Copy-Item -Recurse -Force '.next-release\\\\static' '.next-release\\\\standalone\\\\.next-release\\\\'; Copy-Item -Recurse -Force 'public' '.next-release\\\\standalone\\\\'\"",
-    "start": "NODE_ENV=production bun .next-release/standalone/server.js > server.log 2>&1",
-    "lint": "eslint .",
+
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
