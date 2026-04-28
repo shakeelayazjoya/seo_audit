@@ -17,8 +17,22 @@ export function ContactSection() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const validateForm = () => {
+    if (!name.trim()) return 'Name is required.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Please enter a valid email address.';
+    if (!phone.trim()) return 'Phone number is required.';
+    if (message.trim().length < 10) return 'Message must be at least 10 characters.';
+    return '';
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -64,7 +78,10 @@ export function ContactSection() {
                 <Input
                   id="contact-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (error) setError('');
+                  }}
                   className="border-white/10 bg-white/5 pl-9 text-white placeholder:text-slate-400"
                   placeholder="John Doe"
                   disabled={loading}
@@ -79,7 +96,10 @@ export function ContactSection() {
                   id="contact-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError('');
+                  }}
                   className="border-white/10 bg-white/5 pl-9 text-white placeholder:text-slate-400"
                   placeholder="you@example.com"
                   disabled={loading}
@@ -95,7 +115,10 @@ export function ContactSection() {
               <Input
                 id="contact-phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (error) setError('');
+                }}
                 className="border-white/10 bg-white/5 pl-9 text-white placeholder:text-slate-400"
                 placeholder="+1 555 555 5555"
                 disabled={loading}
@@ -108,7 +131,10 @@ export function ContactSection() {
             <Textarea
               id="contact-message"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (error) setError('');
+              }}
               className="min-h-32 border-white/10 bg-white/5 text-white placeholder:text-slate-400"
               placeholder="Tell us how we can help."
               disabled={loading}

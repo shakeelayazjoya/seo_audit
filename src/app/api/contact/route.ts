@@ -10,6 +10,7 @@ import {
 import { logAppEvent } from '@/lib/monitoring';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^[+()\-\s\d]{7,20}$/;
 const CONTACT_EMAIL_TIMEOUT_MS = 8000;
 
 function getRequesterKey(request: NextRequest) {
@@ -22,6 +23,10 @@ function getRequesterKey(request: NextRequest) {
 
 function getContactInbox() {
   return process.env.CONTACT_INBOX?.trim() || process.env.SMTP_USER?.trim() || process.env.EMAIL_FROM?.trim() || '';
+}
+
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 async function sendEmailWithTimeout(
@@ -57,14 +62,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const name = String(body.name ?? '').trim();
-    const email = String(body.email ?? '').trim().toLowerCase();
-    const phone = String(body.phone ?? '').trim();
-    const message = String(body.message ?? '').trim();
+    const name = readString(body.name);
+    const email = readString(body.email).toLowerCase();
+    const phone = readString(body.phone ?? body.phoneNumber ?? body.phonenumber ?? body.mobile);
+    const message = readString(body.message ?? body.description ?? body.note ?? body.notes);
+    const normalizedPhone = phone.replace(/\s+/g, ' ').trim();
+    const errors: string[] = [];
 
-    if (!name || !EMAIL_REGEX.test(email) || !phone || message.length < 10) {
+    if (!name) {
+      errors.push('Name is required.');
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      errors.push('A valid email is required.');
+    }
+
+    if (!normalizedPhone) {
+      errors.push('Phone number is required.');
+    } else if (!PHONE_REGEX.test(normalizedPhone)) {
+      errors.push('Phone number format looks invalid.');
+    }
+
+    if (!message) {
+      errors.push('Message is required.');
+    } else if (message.length < 10) {
+      errors.push('Message must be at least 10 characters.');
+    }
+
+    if (errors.length > 0) {
       return NextResponse.json(
-        { error: 'Name, valid email, phone number, and a message are required.' },
+        {
+          error: errors[0],
+          errors,
+        },
         { status: 400 }
       );
     }
@@ -78,7 +108,7 @@ export async function POST(request: NextRequest) {
         email,
         payload: {
           name,
-          phone,
+          phone: normalizedPhone,
           message,
         },
       },
@@ -91,7 +121,7 @@ export async function POST(request: NextRequest) {
     }> = [];
 
     if (inbox) {
-      const adminEmail = buildContactInquiryAdminEmail({ name, email, phone, message });
+      const adminEmail = buildContactInquiryAdminEmail({ name, email, phone: normalizedPhone, message });
       emailJobs.push({
         target: 'admin',
         job: sendEmailWithTimeout(
