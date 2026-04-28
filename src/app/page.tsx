@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
+import { Suspense, useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Search,
@@ -1138,7 +1138,7 @@ function LoadingState({ domain }: { domain: string }) {
 // App Root
 // ============================================================
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
@@ -1392,5 +1392,13 @@ export default function Home() {
         domain={currentAudit?.domain}
       />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }
