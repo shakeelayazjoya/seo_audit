@@ -7,7 +7,7 @@ import {
   saveAuditRecord,
 } from './audit-store.ts';
 import { logAppEvent } from './monitoring.ts';
-import { persistAuditPdfReport } from './report-pdf.ts';
+import { generateAuditPdf, persistAuditPdfReport } from './report-pdf.ts';
 import { db } from './db.ts';
 import { sendEmail } from './email.ts';
 import { buildReportDeliveryEmail } from './email-templates.ts';
@@ -79,6 +79,70 @@ function getPartialAuditState(modules: Awaited<ReturnType<typeof generateAuditMo
   };
 }
 
+async function sendAuditCompletionEmail(auditId: string) {
+  const auditWithUser = await db.audit.findUnique({
+    where: { id: auditId },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!auditWithUser?.user?.email) {
+    await logAppEvent({
+      level: 'warn',
+      type: 'report.email_skipped',
+      message: 'Audit report auto-email skipped because no user email is linked to the audit',
+      context: {
+        auditId,
+        userId: auditWithUser?.userId ?? null,
+      },
+    });
+    return;
+  }
+
+  const report = await generateAuditPdf(auditId);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const reportUrl = `${appUrl}/?audit=${report.audit.id}`;
+  const email = buildReportDeliveryEmail({
+    domain: report.audit.domain,
+    recipientEmail: auditWithUser.user.email,
+    overallScore: report.audit.overallScore,
+    reportUrl,
+    modules: report.modules,
+  });
+
+  const delivery = await sendEmail({
+    to: auditWithUser.user.email,
+    subject: email.subject,
+    html: email.html,
+    text: email.text,
+    attachments: [
+      {
+        filename: report.filename,
+        content: report.pdf,
+        contentType: 'application/pdf',
+      },
+    ],
+  });
+
+  await logAppEvent({
+    level: delivery.success ? 'info' : 'warn',
+    type: 'report.email_sent',
+    message: delivery.success ? 'Audit report email sent automatically' : 'Audit report auto-email skipped',
+    context: {
+      auditId: report.audit.id,
+      email: auditWithUser.user.email,
+      provider: delivery.provider,
+      skippedReason: delivery.skippedReason ?? null,
+      trigger: 'audit_complete',
+    },
+  });
+}
+
 export async function processOneAuditJob() {
   const job = await claimNextAuditJob(workerId);
   if (!job) return false;
@@ -130,56 +194,6 @@ export async function processOneAuditJob() {
           secureUrl: storedReport.cloudinary.secureUrl,
         },
       });
-
-      const auditWithUser = await db.audit.findUnique({
-        where: { id: job.auditId },
-        include: {
-          user: {
-            select: {
-              email: true,
-            },
-          },
-        },
-      });
-
-      if (auditWithUser?.user?.email) {
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
-        const reportUrl = `${appUrl}/?audit=${storedReport.audit.id}`;
-        const email = buildReportDeliveryEmail({
-          domain: storedReport.audit.domain,
-          recipientEmail: auditWithUser.user.email,
-          overallScore: storedReport.audit.overallScore,
-          reportUrl,
-          modules: storedReport.modules,
-        });
-
-        const delivery = await sendEmail({
-          to: auditWithUser.user.email,
-          subject: email.subject,
-          html: email.html,
-          text: email.text,
-          attachments: [
-            {
-              filename: storedReport.filename,
-              content: storedReport.pdf,
-              contentType: 'application/pdf',
-            },
-          ],
-        });
-
-        await logAppEvent({
-          level: delivery.success ? 'info' : 'warn',
-          type: 'report.email_sent',
-          message: delivery.success ? 'Audit report email sent automatically' : 'Audit report auto-email skipped',
-          context: {
-            auditId: storedReport.audit.id,
-            email: auditWithUser.user.email,
-            provider: delivery.provider,
-            skippedReason: delivery.skippedReason ?? null,
-            trigger: 'audit_complete',
-          },
-        });
-      }
     } catch (storageError) {
       await logAppEvent({
         level: 'warn',
@@ -189,6 +203,21 @@ export async function processOneAuditJob() {
           auditId: job.auditId,
           domain: job.domain,
           error: storageError instanceof Error ? storageError.message : 'Unknown storage error',
+        },
+      });
+    }
+
+    try {
+      await sendAuditCompletionEmail(job.auditId);
+    } catch (emailError) {
+      await logAppEvent({
+        level: 'warn',
+        type: 'report.email_failed',
+        message: 'Audit report auto-email failed',
+        context: {
+          auditId: job.auditId,
+          domain: job.domain,
+          error: emailError instanceof Error ? emailError.message : 'Unknown email error',
         },
       });
     }

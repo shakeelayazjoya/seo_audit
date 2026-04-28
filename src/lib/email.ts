@@ -28,6 +28,15 @@ interface EmailProvider {
   send(message: EmailMessage): Promise<EmailSendResult>;
 }
 
+function getEmailTimeoutMs() {
+  const rawValue = Number(process.env.EMAIL_TIMEOUT_MS ?? '10000');
+  if (!Number.isFinite(rawValue) || rawValue <= 0) {
+    return 10000;
+  }
+
+  return rawValue;
+}
+
 function getProviderName() {
   return (process.env.EMAIL_PROVIDER ?? 'console').trim().toLowerCase();
 }
@@ -83,6 +92,9 @@ class SmtpEmailProvider implements EmailProvider {
           host: process.env.SMTP_HOST,
           port: Number(process.env.SMTP_PORT),
           secure: String(process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true',
+          connectionTimeout: getEmailTimeoutMs(),
+          greetingTimeout: getEmailTimeoutMs(),
+          socketTimeout: getEmailTimeoutMs(),
           auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,

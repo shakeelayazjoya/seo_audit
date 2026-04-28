@@ -10,6 +10,7 @@ import {
 import { logAppEvent } from '@/lib/monitoring';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CONTACT_EMAIL_TIMEOUT_MS = 8000;
 
 function getRequesterKey(request: NextRequest) {
   return (
@@ -21,6 +22,24 @@ function getRequesterKey(request: NextRequest) {
 
 function getContactInbox() {
   return process.env.CONTACT_INBOX?.trim() || process.env.SMTP_USER?.trim() || process.env.EMAIL_FROM?.trim() || '';
+}
+
+async function sendEmailWithTimeout(
+  label: 'admin' | 'user',
+  operation: Promise<Awaited<ReturnType<typeof sendEmail>>>
+) {
+  const timeout = new Promise<Awaited<ReturnType<typeof sendEmail>>>((resolve) => {
+    const timer = setTimeout(() => {
+      clearTimeout(timer);
+      resolve({
+        success: false,
+        provider: 'timeout',
+        skippedReason: `${label} email timed out after ${CONTACT_EMAIL_TIMEOUT_MS}ms.`,
+      });
+    }, CONTACT_EMAIL_TIMEOUT_MS);
+  });
+
+  return Promise.race([operation, timeout]);
 }
 
 export async function POST(request: NextRequest) {
@@ -66,30 +85,72 @@ export async function POST(request: NextRequest) {
     });
 
     const inbox = getContactInbox();
-    let adminDelivery = null;
-    let userDelivery = null;
+    const emailJobs: Array<{
+      target: 'admin' | 'user';
+      job: Promise<Awaited<ReturnType<typeof sendEmail>>>;
+    }> = [];
 
     if (inbox) {
       const adminEmail = buildContactInquiryAdminEmail({ name, email, phone, message });
-      adminDelivery = await sendEmail({
-        to: inbox,
-        subject: adminEmail.subject,
-        html: adminEmail.html,
-        text: adminEmail.text,
-        replyTo: email,
+      emailJobs.push({
+        target: 'admin',
+        job: sendEmailWithTimeout(
+          'admin',
+          sendEmail({
+            to: inbox,
+            subject: adminEmail.subject,
+            html: adminEmail.html,
+            text: adminEmail.text,
+            replyTo: email,
+          })
+        ),
       });
     }
 
     const confirmationEmail = buildContactConfirmationEmail({ name });
-    userDelivery = await sendEmail({
-      to: email,
-      subject: confirmationEmail.subject,
-      html: confirmationEmail.html,
-      text: confirmationEmail.text,
+    emailJobs.push({
+      target: 'user',
+      job: sendEmailWithTimeout(
+        'user',
+        sendEmail({
+          to: email,
+          subject: confirmationEmail.subject,
+          html: confirmationEmail.html,
+          text: confirmationEmail.text,
+        })
+      ),
     });
 
+    const emailResults = await Promise.allSettled(emailJobs.map((entry) => entry.job));
+    const adminResultIndex = emailJobs.findIndex((entry) => entry.target === 'admin');
+    const userResultIndex = emailJobs.findIndex((entry) => entry.target === 'user');
+    const adminDeliveryResult = adminResultIndex >= 0 ? emailResults[adminResultIndex] : null;
+    const userDeliveryResult = userResultIndex >= 0 ? emailResults[userResultIndex] : null;
+    const adminDelivery =
+      adminDeliveryResult?.status === 'fulfilled'
+        ? adminDeliveryResult.value
+        : adminDeliveryResult
+          ? {
+              success: false,
+              provider: 'error',
+              skippedReason: 'Admin email failed to send.',
+            }
+          : {
+              success: false,
+              provider: 'skipped',
+              skippedReason: 'CONTACT_INBOX is not configured.',
+            };
+    const userDelivery =
+      userDeliveryResult?.status === 'fulfilled'
+        ? userDeliveryResult.value
+        : {
+            success: false,
+            provider: 'error',
+            skippedReason: 'Confirmation email failed to send.',
+          };
+
     await logAppEvent({
-      level: 'info',
+      level: adminDelivery.success || userDelivery.success ? 'info' : 'warn',
       type: 'contact.submitted',
       message: 'Contact form submitted',
       context: {
