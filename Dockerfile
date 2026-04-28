@@ -18,6 +18,8 @@ RUN npm run db:generate
 # Build Next.js app
 RUN npm run build
 
+# Debug build output layout
+RUN ls -la /app/.next && ls -la /app/.next/standalone && ls -la /app/.next/standalone/.next/static
 
 # ----------------------------
 # 2. Production stage
