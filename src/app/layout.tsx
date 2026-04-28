@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   keywords: [
     "SEO audit",
     "SEO analysis tool",
-    "website SEO checker",
+    "website SEO checker",  
     "technical SEO audit",
     "Core Web Vitals",
     "free SEO report",
