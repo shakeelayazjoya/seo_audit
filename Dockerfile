@@ -18,6 +18,9 @@ RUN npm run db:generate
 # Build Next.js app
 RUN npm run build
 
+# Install Playwright browsers for copying to runner
+RUN npx playwright install chromium
+
 # ----------------------------
 # 2. Production stage
 # ----------------------------
@@ -37,7 +40,7 @@ RUN apk add --no-cache \
     ca-certificates \
     ttf-freefont
 
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
 
 # Copy only the runtime output from the builder
@@ -47,8 +50,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./.next/standalone
 COPY --from=builder /app/.next/static ./.next/standalone/.next/static
 
-# Install Playwright browsers
-RUN npx playwright install chromium
+# Copy Playwright browsers from builder
+COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 # Expose Next.js port
 EXPOSE 3000
