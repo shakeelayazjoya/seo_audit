@@ -1,9 +1,10 @@
 # ----------------------------
 # 1. Build stage
 # ----------------------------
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
+ENV PLAYWRIGHT_BROWSERS_PATH=0
 
 # Install dependencies
 COPY package.json package-lock.json ./
@@ -12,36 +13,45 @@ RUN npm ci
 # Copy project
 COPY . .
 
-# Generate Prisma client before building
-RUN npm run db:generate
-
 # Build Next.js app
 RUN npm run build
-
-# Install Playwright browsers for copying to runner
-RUN npx playwright install chromium
 
 # ----------------------------
 # 2. Production stage
 # ----------------------------
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=0
 
-# Install Playwright dependencies
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    ttf-freefont
-
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy only the runtime output from the builder
 COPY --from=builder /app/node_modules ./node_modules
@@ -49,9 +59,6 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./.next/standalone
 COPY --from=builder /app/.next/static ./.next/standalone/.next/static
-
-# Copy Playwright browsers from builder
-COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
 # Expose Next.js port
 EXPOSE 3000

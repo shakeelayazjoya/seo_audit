@@ -3,7 +3,18 @@ import type { AuditModules } from '@/lib/audit-engine';
 import { getAuditRecord } from '@/lib/audit-store';
 import { uploadLatestAuditPdf } from '@/lib/cloudinary';
 
+process.env.PLAYWRIGHT_BROWSERS_PATH ??= '0';
+
 const require = createRequire(import.meta.url);
+
+function getPlaywrightLaunchOptions() {
+  return process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+    ? {
+        headless: true,
+        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+      }
+    : { headless: true };
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -183,7 +194,7 @@ export async function getAuditReportData(auditId: string) {
 export async function generateAuditPdf(auditId: string) {
   const { audit, modules } = await getAuditReportData(auditId);
   const { chromium } = require('playwright') as typeof import('playwright');
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(getPlaywrightLaunchOptions());
 
   try {
     const page = await browser.newPage();

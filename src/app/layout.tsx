@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   title: "SEO Audit Platform — Free Website SEO Analysis Tool",
   description:
     "Get a comprehensive SEO audit across 7 dimensions including Technical SEO, Core Web Vitals, On-Page, CRO, Local SEO, AI/E-E-A-T, and Schema Markup. Free instant analysis with prioritized action items.",
-  viewport: "width=device-width, initial-scale=1",
   keywords: [
     "SEO audit",
     "SEO analysis tool",
@@ -30,6 +29,11 @@ export const metadata: Metadata = {
       "Analyze your website's SEO health in 60 seconds. Get actionable recommendations across 7 critical dimensions.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
