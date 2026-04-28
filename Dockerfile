@@ -32,8 +32,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PLAYWRIGHT_BROWSERS_PATH=0
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
     ca-certificates \
     fonts-liberation \
     libasound2 \
