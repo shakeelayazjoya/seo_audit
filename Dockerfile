@@ -12,6 +12,9 @@ RUN npm ci
 # Copy project
 COPY . .
 
+# Generate Prisma client before building
+RUN npm run db:generate
+
 # Build Next.js app
 RUN npm run build
 
