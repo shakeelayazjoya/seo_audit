@@ -8,6 +8,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=0
 
 # Install dependencies
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
 RUN npm ci
 
 # Copy project
