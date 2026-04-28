@@ -8,6 +8,9 @@ import {
 } from './audit-store.ts';
 import { logAppEvent } from './monitoring.ts';
 import { persistAuditPdfReport } from './report-pdf.ts';
+import { db } from './db.ts';
+import { sendEmail } from './email.ts';
+import { buildReportDeliveryEmail } from './email-templates.ts';
 
 const WORKER_AUDIT_TIMEOUT_MS = 150000;
 const IDLE_SLEEP_MS = 4000;
@@ -127,6 +130,56 @@ export async function processOneAuditJob() {
           secureUrl: storedReport.cloudinary.secureUrl,
         },
       });
+
+      const auditWithUser = await db.audit.findUnique({
+        where: { id: job.auditId },
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      });
+
+      if (auditWithUser?.user?.email) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+        const reportUrl = `${appUrl}/?audit=${storedReport.audit.id}`;
+        const email = buildReportDeliveryEmail({
+          domain: storedReport.audit.domain,
+          recipientEmail: auditWithUser.user.email,
+          overallScore: storedReport.audit.overallScore,
+          reportUrl,
+          modules: storedReport.modules,
+        });
+
+        const delivery = await sendEmail({
+          to: auditWithUser.user.email,
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+          attachments: [
+            {
+              filename: storedReport.filename,
+              content: storedReport.pdf,
+              contentType: 'application/pdf',
+            },
+          ],
+        });
+
+        await logAppEvent({
+          level: delivery.success ? 'info' : 'warn',
+          type: 'report.email_sent',
+          message: delivery.success ? 'Audit report email sent automatically' : 'Audit report auto-email skipped',
+          context: {
+            auditId: storedReport.audit.id,
+            email: auditWithUser.user.email,
+            provider: delivery.provider,
+            skippedReason: delivery.skippedReason ?? null,
+            trigger: 'audit_complete',
+          },
+        });
+      }
     } catch (storageError) {
       await logAppEvent({
         level: 'warn',

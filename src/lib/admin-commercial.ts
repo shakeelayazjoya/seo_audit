@@ -36,6 +36,7 @@ export interface AdminCommercialOverview {
     reportSendCount: number;
     bookingCount: number;
     checkoutCount: number;
+    contactCount: number;
     userCount: number;
     activeSessionCount: number;
     loginCount: number;
@@ -95,6 +96,16 @@ export interface AdminCommercialOverview {
     plan: string | null;
     createdAt: string;
     updatedAt: string;
+  }>;
+  contacts: Array<{
+    id: string;
+    email: string | null;
+    userEmail: string | null;
+    name: string | null;
+    phone: string | null;
+    message: string | null;
+    createdAt: string;
+    status: string;
   }>;
   aiCalls: Array<{
     id: string;
@@ -265,6 +276,27 @@ export async function getAdminCommercialOverview(limit = 50): Promise<AdminComme
       };
     });
 
+  const contacts = requests
+    .filter((request) => request.type === 'contact')
+    .slice(0, limit)
+    .map((request) => {
+      const payload =
+        request.payload && typeof request.payload === 'object' && !Array.isArray(request.payload)
+          ? (request.payload as Record<string, unknown>)
+          : null;
+
+      return {
+        id: request.id,
+        email: request.email,
+        userEmail: request.user?.email ?? null,
+        name: typeof payload?.name === 'string' ? payload.name : null,
+        phone: typeof payload?.phone === 'string' ? payload.phone : null,
+        message: typeof payload?.message === 'string' ? payload.message : null,
+        createdAt: request.createdAt.toISOString(),
+        status: request.status,
+      };
+    });
+
   const reportSends = reportEvents.map((event) => {
     const context = parseEventContext(event.context);
     return {
@@ -364,6 +396,7 @@ export async function getAdminCommercialOverview(limit = 50): Promise<AdminComme
       reportSendCount: reportSends.length,
       bookingCount: bookings.length,
       checkoutCount: checkouts.length,
+      contactCount: contacts.length,
       userCount: users.length,
       activeSessionCount,
       loginCount: loginEvents.length,
@@ -396,6 +429,7 @@ export async function getAdminCommercialOverview(limit = 50): Promise<AdminComme
     reportSends,
     bookings,
     checkouts,
+    contacts,
     aiCalls,
     users: userRows,
   };

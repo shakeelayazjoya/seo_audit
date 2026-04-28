@@ -40,6 +40,7 @@ import { AuditDashboard } from '@/components/seo/AuditDashboard';
 import { LeadCaptureDialog } from '@/components/seo/LeadCaptureDialog';
 import { AuditHistory } from '@/components/seo/AuditHistory';
 import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
+import { ContactSection } from '@/components/seo/ContactSection';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1220,6 +1221,13 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="contact" className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#060B14]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16">
+          <ContactSection />
         </div>
       </section>
 

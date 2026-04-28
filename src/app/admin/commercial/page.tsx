@@ -67,13 +67,14 @@ export default async function AdminCommercialPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
           {[
             { label: 'Leads', value: overview.summary.leadCount, icon: Users },
             { label: 'Report Sends', value: overview.summary.reportSendCount, icon: Mail },
             { label: 'Bookings', value: overview.summary.bookingCount, icon: CalendarDays },
             { label: 'Checkouts', value: overview.summary.checkoutCount, icon: CreditCard },
             { label: 'Users', value: overview.summary.userCount, icon: UserCheck },
+            { label: 'Contacts', value: overview.summary.contactCount, icon: Mail },
           ].map((item) => (
             <Card key={item.label}>
               <CardContent className="flex items-center justify-between pt-6">
@@ -255,6 +256,42 @@ export default async function AdminCommercialPage() {
                         <TableCell><Badge variant="outline">{lead.status}</Badge></TableCell>
                         <TableCell>{lead.userEmail ?? 'Guest'}</TableCell>
                         <TableCell>{formatDate(lead.createdAt)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Contact Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {overview.contacts.length === 0 ? (
+                <EmptyState message="No contact messages have been submitted yet." />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Message</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {overview.contacts.map((contact) => (
+                      <TableRow key={contact.id}>
+                        <TableCell className="font-medium">{contact.name ?? '—'}</TableCell>
+                        <TableCell>{contact.email ?? contact.userEmail ?? '—'}</TableCell>
+                        <TableCell>{contact.phone ?? '—'}</TableCell>
+                        <TableCell className="max-w-[320px] truncate">{contact.message ?? '—'}</TableCell>
+                        <TableCell><Badge variant="outline">{contact.status}</Badge></TableCell>
+                        <TableCell>{formatDate(contact.createdAt)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
