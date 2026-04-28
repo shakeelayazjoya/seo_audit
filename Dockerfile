@@ -6,13 +6,19 @@ FROM node:22-bookworm-slim AS builder
 WORKDIR /app
 ENV PLAYWRIGHT_BROWSERS_PATH=0
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+  && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies
 COPY package.json package-lock.json ./
-COPY scripts ./scripts
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # Copy project
 COPY . .
+
+# Run project postinstall only after scripts and prisma schema exist
+RUN node scripts/postinstall.mjs
 
 # Build Next.js app
 RUN npm run build
