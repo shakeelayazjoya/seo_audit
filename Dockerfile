@@ -27,12 +27,28 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install Playwright dependencies
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
+ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
+
 # Copy only the runtime output from the builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./.next/standalone
 COPY --from=builder /app/.next/static ./.next/standalone/.next/static
+
+# Install Playwright browsers
+RUN npx playwright install chromium
 
 # Expose Next.js port
 EXPOSE 3000
