@@ -17,9 +17,9 @@ interface DomainHistoryDashboardProps {
 export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps) {
   if (history.length === 0) {
     return (
-      <Card className="border border-white/10 bg-white/5 backdrop-blur-2xl">
-        <CardContent className="pt-6 text-slate-200">
-          <p className="text-sm text-slate-300">
+      <Card className="border border-slate-200 bg-white shadow-sm">
+        <CardContent className="pt-6 text-slate-700">
+          <p className="text-sm text-slate-600">
             No completed audits have been saved yet. Run a site audit to start building domain history.
           </p>
         </CardContent>
@@ -34,12 +34,12 @@ export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps)
         const gradeColor = getGradeColor(grade);
 
         return (
-          <Card key={entry.domain} className="overflow-hidden border border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl">
-            <CardHeader className="border-b border-white/10 bg-white/10">
+          <Card key={entry.domain} className="overflow-hidden border border-slate-200 bg-white shadow-sm">
+            <CardHeader className="border-b border-slate-200 bg-slate-50">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-lg text-white">{entry.domain}</CardTitle>
-                  <p className="mt-1 text-sm text-slate-300">
+                  <CardTitle className="text-lg text-slate-900">{entry.domain}</CardTitle>
+                  <p className="mt-1 text-sm text-slate-500">
                     Last audited {format(new Date(entry.lastAuditedAt), 'MMM d, yyyy')}
                   </p>
                 </div>
@@ -54,7 +54,7 @@ export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps)
                   >
                     Latest {entry.latestScore}
                   </Badge>
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" className="bg-orange-500 text-white hover:bg-orange-600">
                     <Link href={`/?audit=${entry.latestAuditId}`}>
                       Open Audit
                       <ArrowRight className="ml-1 size-3.5" />
@@ -63,35 +63,35 @@ export function DomainHistoryDashboard({ history }: DomainHistoryDashboardProps)
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6 text-slate-200">
+            <CardContent className="space-y-6 pt-6 text-slate-700">
               <div className="grid gap-3 sm:grid-cols-4">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
                     <BarChart3 className="size-3.5" />
                     Audits
                   </div>
-                  <p className="text-2xl font-semibold text-white">{entry.auditCount}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{entry.auditCount}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
                     <TrendingUp className="size-3.5" />
                     Best Score
                   </div>
-                  <p className="text-2xl font-semibold text-white">{entry.bestScore}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{entry.bestScore}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
                     <BarChart3 className="size-3.5" />
                     Average
                   </div>
-                  <p className="text-2xl font-semibold text-white">{entry.averageScore}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{entry.averageScore}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
                     <Clock3 className="size-3.5" />
                     Latest Grade
                   </div>
-                  <p className="text-2xl font-semibold text-white">{grade}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{grade}</p>
                 </div>
               </div>
 

@@ -1,7 +1,8 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useCallback, useEffect } from 'react';
+import { useSearchParams, ReadonlyURLSearchParams } from 'next/navigation';
 import {
   Search,
   BarChart3,
@@ -1221,8 +1222,7 @@ function LoadingState({ domain }: { domain: string }) {
 // ============================================================
 // App Root
 // ============================================================
-export default function Home() {
-  const searchParams = useSearchParams();
+function HomeContent({ searchParams }: { searchParams: ReadonlyURLSearchParams }) {
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
@@ -1414,5 +1414,18 @@ export default function Home() {
         domain={currentAudit?.domain}
       />
     </div>
+  );
+}
+
+function HomeClient() {
+  const searchParams = useSearchParams();
+  return <HomeContent searchParams={searchParams} />;
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeClient />
+    </Suspense>
   );
 }
