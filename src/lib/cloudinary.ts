@@ -80,15 +80,14 @@ export async function uploadLatestAuditPdf(input: {
   await destroyRawAsset(publicId).catch(() => {});
 
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const uploadParams = {
+  const uploadSignatureParams = {
     filename_override: input.filename,
     folder: 'seo-audit-reports',
     overwrite: 'true',
     public_id: publicId,
-    resource_type: 'raw',
     timestamp,
   };
-  const signature = buildSignature(uploadParams, apiSecret);
+  const signature = buildSignature(uploadSignatureParams, apiSecret);
 
   const formData = new FormData();
   const pdfBytes = new Uint8Array(input.pdf);

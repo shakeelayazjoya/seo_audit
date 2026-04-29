@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { installPlaywrightLocalBrowsers } from './playwright-install.mjs';
 
 function run(command, args, extraEnv = {}) {
   const result = spawnSync(command, args, {
@@ -29,9 +30,7 @@ try {
 
   const playwrightCli = path.resolve('node_modules', 'playwright', 'cli.js');
   if (existsSync(playwrightCli)) {
-    run(process.execPath, [playwrightCli, 'install', 'chromium'], {
-      PLAYWRIGHT_BROWSERS_PATH: '0',
-    });
+    installPlaywrightLocalBrowsers();
   }
 } catch (error) {
   console.error('[postinstall] Failed:', error instanceof Error ? error.message : error);

@@ -185,12 +185,16 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                   Export PDF
                 </Link>
               </Button>
-              {!isPaid && (
+              {/* {!isPaid && (
                 <Button size="sm" onClick={onUpgradeClick}>
                   <ShieldCheck className="size-3.5" />
                   Get Full Report
                 </Button>
-              )}
+              )} */}
+              <Button size="sm" onClick={onUpgradeClick}>
+                  <ShieldCheck className="size-3.5" />
+                  Get Full Report
+                </Button>
             </div>
           </div>
         </div>
