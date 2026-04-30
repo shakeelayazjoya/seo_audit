@@ -5,6 +5,8 @@ import { uploadLatestAuditPdf } from '@/lib/cloudinary';
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= '0';
 
+export type AuditReportVariant = 'full' | 'preview';
+
 const require = createRequire(import.meta.url);
 
 function getPlaywrightLaunchOptions() {
@@ -58,6 +60,7 @@ function buildReportHtml(params: {
   overallScore: number;
   createdAt: string;
   modules: AuditModules;
+  variant: AuditReportVariant;
 }) {
   const modules = [
     ['Technical SEO', params.modules.technical],
@@ -74,7 +77,7 @@ function buildReportHtml(params: {
       (module?.issues ?? []).map((issue) => ({ moduleName, issue }))
     )
     .sort((a, b) => b.issue.impactScore - a.issue.impactScore)
-    .slice(0, 8)
+    .slice(0, params.variant === 'preview' ? 4 : 8)
     .map(
       ({ moduleName, issue }) => `
         <tr>
@@ -88,7 +91,30 @@ function buildReportHtml(params: {
     )
     .join('');
 
-  const moduleSections = modules.map(([title, module]) => renderIssues(title, module)).join('');
+  const previewNotice = params.variant === 'preview'
+    ? `
+      <section class="top-issues">
+        <h2>Preview Report</h2>
+        <p class="muted">
+          This PDF shows a preview of the audit only. Sign in to unlock the full report, all modules, complete fix plans, and the full developer recommendations.
+        </p>
+      </section>
+    `
+    : '';
+
+  const moduleSections = (params.variant === 'preview' ? modules.slice(0, 3) : modules)
+    .map((entry) => {
+      const [title, module] = entry;
+      if (params.variant !== 'preview' || !module) {
+        return renderIssues(title, module);
+      }
+
+      return renderIssues(title, {
+        ...module,
+        issues: module.issues.slice(0, 2),
+      });
+    })
+    .join('');
 
   return `
     <!doctype html>
@@ -152,6 +178,8 @@ function buildReportHtml(params: {
             </div>
           </section>
 
+          ${previewNotice}
+
           <section class="top-issues">
             <h2>Highest Priority Issues</h2>
             <table>
@@ -192,6 +220,10 @@ export async function getAuditReportData(auditId: string) {
 }
 
 export async function generateAuditPdf(auditId: string) {
+  return generateAuditPdfVariant(auditId, 'full');
+}
+
+export async function generateAuditPdfVariant(auditId: string, variant: AuditReportVariant) {
   const { audit, modules } = await getAuditReportData(auditId);
   const { chromium } = require('playwright') as typeof import('playwright');
   const browser = await chromium.launch(getPlaywrightLaunchOptions());
@@ -204,6 +236,7 @@ export async function generateAuditPdf(auditId: string) {
         overallScore: audit.overallScore,
         createdAt: audit.createdAt,
         modules,
+        variant,
       }),
       { waitUntil: 'load' }
     );
@@ -218,7 +251,8 @@ export async function generateAuditPdf(auditId: string) {
       audit,
       modules,
       pdf,
-      filename: `${audit.domain.replace(/[^a-z0-9]+/gi, '-')}-seo-audit.pdf`,
+      filename: `${audit.domain.replace(/[^a-z0-9]+/gi, '-')}-seo-audit${variant === 'preview' ? '-preview' : ''}.pdf`,
+      variant,
     };
   } finally {
     await browser.close();
@@ -226,7 +260,7 @@ export async function generateAuditPdf(auditId: string) {
 }
 
 export async function persistAuditPdfReport(auditId: string) {
-  const report = await generateAuditPdf(auditId);
+  const report = await generateAuditPdfVariant(auditId, 'full');
   const cloudinary = await uploadLatestAuditPdf({
     domain: report.audit.domain,
     filename: report.filename,

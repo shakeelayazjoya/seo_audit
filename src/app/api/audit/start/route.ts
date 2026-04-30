@@ -6,6 +6,7 @@ import { logAppEvent } from '@/lib/monitoring';
 import { triggerBackgroundAuditDrain } from '@/lib/audit-worker-runtime';
 
 const DOMAIN_REGEX = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const runtime = 'nodejs';
 
 function getRequesterKey(request: NextRequest) {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { domain } = body as { domain?: string };
+    const { domain, email } = body as { domain?: string; email?: string };
 
     // ── Validate domain ───────────────────────────────────────────────────
     if (!domain || typeof domain !== 'string') {
@@ -50,12 +51,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json(
+        { error: 'Email is required to run your audit and receive the report.' },
+        { status: 400 }
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: 'Please provide a valid email address.' },
+        { status: 400 }
+      );
+    }
+
     const now = new Date();
     const auditId = crypto.randomUUID();
 
     await enqueueAuditJob({
       auditId,
       domain: normalized,
+      email: normalizedEmail,
       userId: session?.user?.id ?? null,
     });
 
@@ -66,6 +84,7 @@ export async function POST(request: NextRequest) {
       context: {
         auditId,
         domain: normalized,
+        email: normalizedEmail,
         userId: session?.user?.id ?? null,
       },
     });

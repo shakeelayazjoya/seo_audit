@@ -101,6 +101,7 @@ function toTrendPoint(audit: StoredAudit): AuditTrendPoint {
 export async function enqueueAuditJob(input: {
   auditId: string;
   domain: string;
+  email: string;
   userId?: string | null;
   priority?: number;
 }) {
@@ -116,6 +117,17 @@ export async function enqueueAuditJob(input: {
         userId: input.userId ?? null,
         createdAt: now,
         updatedAt: now,
+      },
+    });
+
+    await tx.lead.create({
+      data: {
+        email: input.email,
+        domain: input.domain,
+        auditId: audit.id,
+        source: 'audit_start',
+        status: 'captured',
+        userId: input.userId ?? null,
       },
     });
 

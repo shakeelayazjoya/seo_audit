@@ -7,7 +7,7 @@ import {
   saveAuditRecord,
 } from './audit-store.ts';
 import { logAppEvent } from './monitoring.ts';
-import { generateAuditPdf, persistAuditPdfReport } from './report-pdf.ts';
+import { generateAuditPdfVariant, persistAuditPdfReport } from './report-pdf.ts';
 import { db } from './db.ts';
 import { sendEmail } from './email.ts';
 import { buildReportDeliveryEmail } from './email-templates.ts';
@@ -91,11 +91,18 @@ async function sendAuditCompletionEmail(auditId: string) {
     },
   });
 
-  if (!auditWithUser?.user?.email) {
+  const linkedLead = await db.lead.findFirst({
+    where: { auditId },
+    orderBy: { createdAt: 'desc' },
+  });
+  const recipientEmail = linkedLead?.email ?? auditWithUser?.user?.email ?? null;
+  const variant = auditWithUser?.user?.email ? 'full' : 'preview';
+
+  if (!recipientEmail) {
     await logAppEvent({
       level: 'warn',
       type: 'report.email_skipped',
-      message: 'Audit report auto-email skipped because no user email is linked to the audit',
+      message: 'Audit report auto-email skipped because no recipient email is linked to the audit',
       context: {
         auditId,
         userId: auditWithUser?.userId ?? null,
@@ -104,19 +111,22 @@ async function sendAuditCompletionEmail(auditId: string) {
     return;
   }
 
-  const report = await generateAuditPdf(auditId);
+  const report = await generateAuditPdfVariant(auditId, variant);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const reportUrl = `${appUrl}/?audit=${report.audit.id}`;
+  const loginUrl = `${appUrl}/login?next=${encodeURIComponent(`/?audit=${report.audit.id}`)}`;
   const email = buildReportDeliveryEmail({
     domain: report.audit.domain,
-    recipientEmail: auditWithUser.user.email,
+    recipientEmail,
     overallScore: report.audit.overallScore,
     reportUrl,
+    loginUrl,
     modules: report.modules,
+    variant,
   });
 
   const delivery = await sendEmail({
-    to: auditWithUser.user.email,
+    to: recipientEmail,
     subject: email.subject,
     html: email.html,
     text: email.text,
@@ -135,10 +145,11 @@ async function sendAuditCompletionEmail(auditId: string) {
     message: delivery.success ? 'Audit report email sent automatically' : 'Audit report auto-email skipped',
     context: {
       auditId: report.audit.id,
-      email: auditWithUser.user.email,
+      email: recipientEmail,
       provider: delivery.provider,
       skippedReason: delivery.skippedReason ?? null,
       trigger: 'audit_complete',
+      variant,
     },
   });
 }
