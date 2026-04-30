@@ -60,7 +60,7 @@ export function LoginPromptModal({ open, onOpenChange }: LoginPromptModalProps) 
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold tracking-tight mb-2">Authentication Required</h2>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Unlock full access to our SEO suite. Create an account to run audits, track history, and get actionable fix guides.
+                Your preview is ready. Sign in or create a free account to unlock the full audit report, complete fix guides, and the full PDF.
               </p>
             </div>
 

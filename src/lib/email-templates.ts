@@ -14,8 +14,11 @@ export function buildReportDeliveryEmail(params: {
   recipientEmail: string;
   overallScore: number;
   reportUrl: string;
+  loginUrl?: string;
   modules: AuditModules;
+  variant?: 'full' | 'preview';
 }) {
+  const variant = params.variant ?? 'full';
   const topIssues = [
     ...params.modules.technical.issues,
     ...params.modules.onPage.issues,
@@ -32,24 +35,31 @@ export function buildReportDeliveryEmail(params: {
     ? `<ul>${topIssues.map((issue) => `<li><strong>${escapeHtml(issue.title)}</strong>: ${escapeHtml(issue.fixGuide)}</li>`).join('')}</ul>`
     : '<p>No critical issues were detected in this run.</p>';
 
-  const subject = `Your SEO audit report for ${params.domain}`;
+  const subject =
+    variant === 'preview'
+      ? `Your SEO audit preview for ${params.domain}`
+      : `Your SEO audit report for ${params.domain}`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6">
-      <h1 style="margin-bottom:8px;">Your SEO audit is ready</h1>
+      <h1 style="margin-bottom:8px;">${variant === 'preview' ? 'Your SEO audit preview is ready' : 'Your SEO audit is ready'}</h1>
       <p>We generated a fresh audit for <strong>${escapeHtml(params.domain)}</strong>.</p>
       <p style="font-size:16px;">Overall score: <strong>${params.overallScore}/100</strong></p>
-      <p>You can open the live report anytime here:</p>
+      <p>${variant === 'preview' ? 'You can open the live preview here:' : 'You can open the live report anytime here:'}</p>
       <p><a href="${escapeHtml(params.reportUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;padding:12px 18px;border-radius:8px;text-decoration:none;">Open audit report</a></p>
       <h2 style="margin-top:28px;">Top recommendations</h2>
       ${topIssuesHtml}
-      <p style="margin-top:28px;">We also attached the PDF version for easy sharing.</p>
+      <p style="margin-top:28px;">${variant === 'preview' ? 'We also attached the preview PDF version. Sign in to unlock the full report, full fix plans, and the complete PDF.' : 'We also attached the PDF version for easy sharing.'}</p>
+      ${variant === 'preview' && params.loginUrl ? `<p><a href="${escapeHtml(params.loginUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 18px;border-radius:8px;text-decoration:none;">Sign in for the full report</a></p>` : ''}
     </div>
   `;
 
   const text = [
-    `Your SEO audit for ${params.domain} is ready.`,
+    variant === 'preview'
+      ? `Your SEO audit preview for ${params.domain} is ready.`
+      : `Your SEO audit for ${params.domain} is ready.`,
     `Overall score: ${params.overallScore}/100`,
     `Open report: ${params.reportUrl}`,
+    ...(variant === 'preview' && params.loginUrl ? [`Sign in for the full report: ${params.loginUrl}`] : []),
     '',
     'Top recommendations:',
     ...topIssues.map((issue) => `- ${issue.title}: ${issue.fixGuide}`),

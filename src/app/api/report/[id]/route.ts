@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { persistAuditPdfReport } from '@/lib/report-pdf';
+import { getSessionFromRequest } from '@/lib/auth';
+import { generateAuditPdfVariant, persistAuditPdfReport } from '@/lib/report-pdf';
 
 export const runtime = 'nodejs';
 
@@ -9,14 +10,28 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const { pdf, filename, cloudinary } = await persistAuditPdfReport(id);
+    const session = await getSessionFromRequest(_request);
+
+    if (session?.user?.id) {
+      const { pdf, filename, cloudinary } = await persistAuditPdfReport(id);
+
+      return new NextResponse(new Uint8Array(pdf), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `inline; filename="${filename}"`,
+          'X-Cloudinary-Url': cloudinary.secureUrl,
+          'X-Cloudinary-Public-Id': cloudinary.publicId,
+        },
+      });
+    }
+
+    const { pdf, filename } = await generateAuditPdfVariant(id, 'preview');
 
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${filename}"`,
-        'X-Cloudinary-Url': cloudinary.secureUrl,
-        'X-Cloudinary-Public-Id': cloudinary.publicId,
+        'X-Report-Variant': 'preview',
       },
     });
   } catch (error) {
