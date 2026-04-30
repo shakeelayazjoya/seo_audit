@@ -179,22 +179,20 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-                <Link href={`/api/report/${audit.id}`} target="_blank">
-                  <Download className="size-3 mr-1" />
-                  Export PDF
-                </Link>
-              </Button>
-              {/* {!isPaid && (
+              {isPaid && (
+                <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <Link href={`/api/report/${audit.id}`} target="_blank">
+                    <Download className="size-3 mr-1" />
+                    Export PDF
+                  </Link>
+                </Button>
+              )}
+              {!isPaid && (
                 <Button size="sm" onClick={onUpgradeClick}>
                   <ShieldCheck className="size-3.5" />
-                  Get Full Report
+                  Sign In For Full Report
                 </Button>
-              )} */}
-              <Button size="sm" onClick={onUpgradeClick}>
-                  <ShieldCheck className="size-3.5" />
-                  Get Full Report
-                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -508,7 +506,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                   <CardContent className="pt-6">
                     <h3 className="font-semibold mb-1">Unlock the Full Report</h3>
                     <p className="text-sm text-primary-foreground/80 mb-4">
-                      Get detailed fix guides, priority matrices, and actionable recommendations for every issue.
+                      Sign in to unlock detailed fix guides, the full PDF report, and every developer recommendation.
                     </p>
                     <Button
                       variant="secondary"
@@ -516,7 +514,7 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
                       onClick={onUpgradeClick}
                     >
                       <ShieldCheck className="size-4" />
-                      Get Full Report
+                      Sign In To Unlock
                     </Button>
                   </CardContent>
                 </Card>

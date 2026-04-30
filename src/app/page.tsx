@@ -1,8 +1,7 @@
 'use client';
-export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { Suspense, useState, useCallback, useEffect } from 'react';
-import { useSearchParams, ReadonlyURLSearchParams } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Search,
   BarChart3,
@@ -37,13 +36,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { AuditDashboard } from '@/components/seo/AuditDashboard';
-import { LeadCaptureDialog } from '@/components/seo/LeadCaptureDialog';
 import { AuditHistory } from '@/components/seo/AuditHistory';
 import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ContactSection } from '@/components/seo/ContactSection';
 
 // ============================================================
 // Global Styles (injected once)
@@ -244,10 +241,11 @@ function Header({
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
           ? 'bg-background/98 backdrop-blur-xl shadow-sm border-b'
           : 'bg-background/80 backdrop-blur-md border-b border-transparent'
-        }`}
+      }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
@@ -429,20 +427,23 @@ function Header({
 // ============================================================
 // Landing Page
 // ============================================================
-function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
+function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string) => void }) {
   const [url, setUrl] = useState('');
+  const [email, setEmail] = useState('');
   const [pastAudits, setPastAudits] = useState<AuditData[]>([]);
   const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
     fetch('/api/auth/session', { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json().catch(() => ({ user: null }));
-        if (response.ok) setSessionUser(data.user ?? null);
+        if (response.ok) {
+          setSessionUser(data.user ?? null);
+          setEmail((currentEmail) => currentEmail || data.user?.email || '');
+        }
         else setSessionUser(null);
       })
       .catch(() => setSessionUser(null));
@@ -475,7 +476,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
           setPastAudits(mapped);
         }
       })
-      .catch(() => { });
+      .catch(() => {});
   }, [sessionUser]);
 
   const handleLogout = useCallback(async () => {
@@ -492,9 +493,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url.trim()) return;
-    if (!sessionUser) { setShowLoginModal(true); return; }
-    onAnalyze(url.trim());
+    if (!url.trim() || !email.trim()) return;
+    onAnalyze(url.trim(), email.trim());
   };
 
   const startCommercialFlow = async (flow: 'diy' | 'strategy' | 'implementation') => {
@@ -662,33 +662,48 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
             <motion.form
               variants={itemVariants}
               onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto"
+              className="flex flex-col gap-3 max-w-2xl mx-auto"
             >
-              <div className="relative flex-1 group">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                <Input
-                  type="url"
-                  placeholder="Enter your domain (e.g., example.com)"
-                  className="pl-11 h-13 text-base rounded-2xl border-border/60 bg-background/80 focus:bg-background shadow-sm transition-all focus:shadow-md focus:border-primary/50"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr_1fr_auto]">
+                <div className="relative flex-1 group">
+                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    type="url"
+                    placeholder="Enter your domain (e.g., example.com)"
+                    className="pl-11 h-13 text-base rounded-2xl border-border/60 bg-background/80 focus:bg-background shadow-sm transition-all focus:shadow-md focus:border-primary/50"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    style={{ height: '52px' }}
+                    required
+                  />
+                </div>
+                <div className="relative flex-1 group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="pl-11 h-13 text-base rounded-2xl border-border/60 bg-background/80 focus:bg-background shadow-sm transition-all focus:shadow-md focus:border-primary/50"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ height: '52px' }}
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-13 px-7 rounded-2xl btn-primary-glow shadow-md hover:shadow-lg transition-all font-semibold gap-2"
                   style={{ height: '52px' }}
-                />
+                >
+                  <Search className="size-4" />
+                  Free Audit
+                </Button>
               </div>
-              <Button
-                type="submit"
-                size="lg"
-                className="h-13 px-7 rounded-2xl btn-primary-glow shadow-md hover:shadow-lg transition-all font-semibold gap-2"
-                style={{ height: '52px' }}
-              >
-                <Search className="size-4" />
-                Free Audit
-              </Button>
             </motion.form>
 
             {/* Trust badges */}
             <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center gap-3 mt-2">
-              {['No signup required', '100% free report', '7 SEO modules', 'Instant results'].map((text) => (
+              {['URL + email required', 'Preview PDF emailed automatically', '7 SEO modules', 'Full report after login'].map((text) => (
                 <span key={text} className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 rounded-full px-3 py-1.5 border border-border/50">
                   <CheckCircle2 className="size-3 text-emerald-500" />
                   {text}
@@ -857,10 +872,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
               transition={{ delay: idx * 0.1, duration: 0.45 }}
               className={plan.popular ? 'md:-mt-3 md:mb-3' : ''}
             >
-              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${plan.popular
+              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${
+                plan.popular
                   ? 'border-primary/40 shadow-lg shadow-primary/10 pricing-popular'
                   : 'border-border/60'
-                }`}>
+              }`}>
                 {plan.popular && (
                   <>
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
@@ -1031,7 +1047,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
       )}
 
       {/* ── SPECIALIZED ROUTES ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 pt-3">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1066,7 +1082,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
           </div>
         </motion.div>
       </section>
-      <ContactSection />
+
       {/* ── FOOTER ── */}
       <footer className="border-t bg-muted/20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
@@ -1120,8 +1136,6 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string) => void }) {
           </div>
         </div>
       </footer>
-
-      <LoginPromptModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
   );
 }
@@ -1222,19 +1236,30 @@ function LoadingState({ domain }: { domain: string }) {
 // ============================================================
 // App Root
 // ============================================================
-function HomeContent({ searchParams }: { searchParams: ReadonlyURLSearchParams }) {
+export default function Home() {
+  const searchParams = useSearchParams();
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
   const [inputDomain, setInputDomain] = useState('');
-  const [showLeadDialog, setShowLeadDialog] = useState(false);
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isDevPaidPreview =
     process.env.NODE_ENV !== 'production' &&
     (searchParams.get('preview') === 'paid' || searchParams.get('fullFixes') === '1');
-  const isPaid = process.env.NODE_ENV !== 'production' || isDevPaidPreview;
+  const isPaid = Boolean(sessionUser) || isDevPaidPreview;
 
-  const handleAnalyze = useCallback(async (domainOrId: string) => {
+  useEffect(() => {
+    fetch('/api/auth/session', { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({ user: null }));
+        setSessionUser(response.ok ? (data.user ?? null) : null);
+      })
+      .catch(() => setSessionUser(null));
+  }, []);
+
+  const handleAnalyze = useCallback(async (domainOrId: string, email?: string) => {
     setInputDomain(domainOrId);
     setView('loading');
     try {
@@ -1270,7 +1295,7 @@ function HomeContent({ searchParams }: { searchParams: ReadonlyURLSearchParams }
       const res = await fetch('/api/audit/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: domainOrId }),
+        body: JSON.stringify({ domain: domainOrId, email }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -1402,30 +1427,12 @@ function HomeContent({ searchParams }: { searchParams: ReadonlyURLSearchParams }
               audit={currentAudit}
               onBack={handleBack}
               isPaid={isPaid}
-              onUpgradeClick={() => setShowLeadDialog(true)}
+              onUpgradeClick={() => setShowLoginModal(true)}
             />
           </motion.div>
         )}
       </AnimatePresence>
-      <LeadCaptureDialog
-        open={showLeadDialog}
-        onOpenChange={setShowLeadDialog}
-        auditId={currentAudit?.id}
-        domain={currentAudit?.domain}
-      />
+      <LoginPromptModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
-  );
-}
-
-function HomeClient() {
-  const searchParams = useSearchParams();
-  return <HomeContent searchParams={searchParams} />;
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={null}>
-      <HomeClient />
-    </Suspense>
   );
 }
