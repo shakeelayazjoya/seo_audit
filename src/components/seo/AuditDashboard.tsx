@@ -179,20 +179,22 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {isPaid && (
-                <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-                  <Link href={`/api/report/${audit.id}`} target="_blank">
-                    <Download className="size-3 mr-1" />
-                    Export PDF
-                  </Link>
-                </Button>
-              )}
-              {!isPaid && (
+              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+                <Link href={`/api/report/${audit.id}`} target="_blank">
+                  <Download className="size-3 mr-1" />
+                  Export PDF
+                </Link>
+              </Button>
+              {/* {!isPaid && (
                 <Button size="sm" onClick={onUpgradeClick}>
                   <ShieldCheck className="size-3.5" />
                   Sign In For Full Report
                 </Button>
-              )}
+              )} */}
+              <Button size="sm" onClick={onUpgradeClick}>
+                  <ShieldCheck className="size-3.5" />
+                  Get Full Report
+                </Button>
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useCallback, useEffect } from 'react';
+import { useSearchParams, ReadonlyURLSearchParams } from 'next/navigation';
 import {
   Search,
   BarChart3,
@@ -41,6 +42,7 @@ import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ContactSection } from '@/components/seo/ContactSection';
 
 // ============================================================
 // Global Styles (injected once)
@@ -241,11 +243,10 @@ function Header({
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
           ? 'bg-background/98 backdrop-blur-xl shadow-sm border-b'
           : 'bg-background/80 backdrop-blur-md border-b border-transparent'
-      }`}
+        }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
@@ -476,7 +477,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
           setPastAudits(mapped);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [sessionUser]);
 
   const handleLogout = useCallback(async () => {
@@ -872,11 +873,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
               transition={{ delay: idx * 0.1, duration: 0.45 }}
               className={plan.popular ? 'md:-mt-3 md:mb-3' : ''}
             >
-              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${
-                plan.popular
+              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${plan.popular
                   ? 'border-primary/40 shadow-lg shadow-primary/10 pricing-popular'
                   : 'border-border/60'
-              }`}>
+                }`}>
                 {plan.popular && (
                   <>
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
@@ -1047,7 +1047,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       )}
 
       {/* ── SPECIALIZED ROUTES ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16 pt-3">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1082,7 +1082,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
           </div>
         </motion.div>
       </section>
-
+      <ContactSection />
       {/* ── FOOTER ── */}
       <footer className="border-t bg-muted/20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
@@ -1236,8 +1236,7 @@ function LoadingState({ domain }: { domain: string }) {
 // ============================================================
 // App Root
 // ============================================================
-export default function Home() {
-  const searchParams = useSearchParams();
+function HomeContent({ searchParams }: { searchParams: ReadonlyURLSearchParams }) {
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
@@ -1434,5 +1433,18 @@ export default function Home() {
       </AnimatePresence>
       <LoginPromptModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
+  );
+}
+
+function HomeClient() {
+  const searchParams = useSearchParams();
+  return <HomeContent searchParams={searchParams} />;
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeClient />
+    </Suspense>
   );
 }

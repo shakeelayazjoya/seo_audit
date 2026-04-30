@@ -146,7 +146,7 @@ export function IssueAccordion({ issues, domain = '', isPaid = false, onCTAClick
                   {/* Fix Guide */}
                   {isPaid ? (
                     <div className="space-y-3">
-                      <div className="flex justify-end">
+                      {/* <div className="flex justify-end">
                         <Button
                           type="button"
                           variant="outline"
@@ -160,12 +160,12 @@ export function IssueAccordion({ issues, domain = '', isPaid = false, onCTAClick
                           <Bot className="size-3.5" />
                           AI Code Fix
                         </Button>
-                      </div>
+                      </div> */}
                       <div className="rounded-md bg-muted/50 p-3 text-sm">
                         <p className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">Fix Guide</p>
                         <p>{issue.fixGuide}</p>
                       </div>
-                      <DeveloperRecommendation recommendation={getIssueRecommendation(issue)} />
+                      {/* <DeveloperRecommendation recommendation={getIssueRecommendation(issue)} /> */}
                     </div>
                   ) : (
                     <div className="rounded-md border border-dashed bg-muted/30 p-3">
