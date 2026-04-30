@@ -1,7 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   Search,
   BarChart3,
@@ -434,9 +434,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams>(new URLSearchParams());
 
   useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
     fetch('/api/auth/session', { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json().catch(() => ({ user: null }));
@@ -1237,13 +1238,17 @@ function LoadingState({ domain }: { domain: string }) {
 // App Root
 // ============================================================
 export default function Home() {
-  const searchParams = useSearchParams();
   const [view, setView] = useState<AppView>('landing');
   const [currentAudit, setCurrentAudit] = useState<AuditData | null>(null);
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
   const [inputDomain, setInputDomain] = useState('');
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [searchParams, setSearchParams] = useState<URLSearchParams>(new URLSearchParams());
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
 
   const isDevPaidPreview =
     process.env.NODE_ENV !== 'production' &&
