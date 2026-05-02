@@ -38,8 +38,10 @@ import {
 import { AuditDashboard } from '@/components/seo/AuditDashboard';
 import { AuditHistory } from '@/components/seo/AuditHistory';
 import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
+import { ContactSection } from '@/components/seo/ContactSection';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
+import { getSupportEmail, getSupportWhatsappUrl } from '@/lib/support';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ============================================================
@@ -234,6 +236,7 @@ function Header({
   const links = [
     { label: 'Features', id: 'features' },
     { label: 'Pricing', id: 'pricing' },
+    { label: 'Contact', id: 'contact' },
     { label: 'FAQ', id: 'faq' },
   ];
   const displayName = user?.name?.trim() || user?.email || 'Account';
@@ -501,6 +504,13 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   const startCommercialFlow = async (flow: 'diy' | 'strategy' | 'implementation') => {
     setCommerceLoading(flow);
     try {
+      if (flow === 'implementation') {
+        window.location.href = getSupportWhatsappUrl(
+          `Hi, I want help with the full SEO implementation plan${url ? ` for ${url}` : ''}.`
+        );
+        return;
+      }
+
       if (flow === 'strategy') {
         const response = await fetch('/api/commercial/booking', {
           method: 'POST',
@@ -519,7 +529,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       const response = await fetch('/api/commercial/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: flow === 'implementation' ? 'implementation' : 'diy' }),
+        body: JSON.stringify({ plan: 'diy' }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Checkout failed');
@@ -587,6 +597,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   }, 0);
 
   const checkoutStatus = searchParams.get('checkout');
+  const supportEmail = getSupportEmail();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -1047,6 +1058,13 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
         </section>
       )}
 
+      {/* ── CONTACT ── */}
+      <section id="contact" className="border-y bg-slate-950">
+        <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+          <ContactSection />
+        </div>
+      </section>
+
       {/* ── SPECIALIZED ROUTES ── */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         <motion.div
@@ -1123,6 +1141,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 <li><Link href="/ai-seo-audit" className="hover:text-foreground transition-colors">AI SEO Audit</Link></li>
                 <li><Link href="/local-seo-audit" className="hover:text-foreground transition-colors">Local SEO Audit</Link></li>
                 <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">SEO Audit Tool</Link></li>
+                <li><a href={`mailto:${supportEmail}`} className="hover:text-foreground transition-colors">{supportEmail}</a></li>
                 {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Domain Trends</Link></li>}
               </ul>
             </div>

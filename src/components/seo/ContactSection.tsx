@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { getSupportEmail, getSupportWhatsappUrl } from '@/lib/support';
 
 export function ContactSection() {
   const [name, setName] = useState('');
@@ -16,6 +17,8 @@ export function ContactSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const supportEmail = getSupportEmail();
+  const whatsappUrl = getSupportWhatsappUrl('Hi, I need help with my SEO audit.');
 
   const validateForm = () => {
     if (!name.trim()) return 'Name is required.';
@@ -67,6 +70,20 @@ export function ContactSection() {
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
           Need help with your audit, implementation, or a custom SEO plan? Send us a message and our team will get back to you within one business day.
         </p>
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button asChild size="sm" variant="secondary" className="gap-2">
+            <a href={whatsappUrl} target="_blank" rel="noreferrer">
+              <Phone className="size-4" />
+              WhatsApp support
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="gap-2 border-white/20 bg-white/5 text-white hover:bg-white/10">
+            <a href={`mailto:${supportEmail}`}>
+              <Mail className="size-4" />
+              {supportEmail}
+            </a>
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="grid gap-8 px-8 py-8 lg:grid-cols-[1.05fr_1fr] lg:items-start bg-white">
