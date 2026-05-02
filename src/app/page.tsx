@@ -260,14 +260,13 @@ function Header({
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="size-9 rounded-xl bg-primary flex items-center justify-center shadow-sm pulse-ring">
-            <BarChart3 className="size-4.5 text-primary-foreground" />
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '17px', letterSpacing: '-0.01em' }}>
-            SEO Audit
-          </span>
-        </div>
+        <Link href="/" className="flex items-center">
+          <img
+            src="/all-in-one-seo-audit-logo.jpeg"
+            alt="All In One SEO Audit Tool"
+            className="h-10 w-auto max-w-[180px] object-contain sm:h-11 sm:max-w-[220px]"
+          />
+        </Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
@@ -1114,12 +1113,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
             <div>
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="size-8 rounded-xl bg-primary flex items-center justify-center">
-                  <BarChart3 className="size-3.5 text-primary-foreground" />
-                </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.01em' }}>SEO Audit</span>
-              </div>
+              <img
+                src="/all-in-one-seo-audit-logo.jpeg"
+                alt="All In One SEO Audit Tool"
+                className="mb-4 h-12 w-auto max-w-[230px] object-contain"
+              />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Professional SEO audit platform trusted by thousands of businesses worldwide. Get actionable insights to improve your search rankings.
               </p>
