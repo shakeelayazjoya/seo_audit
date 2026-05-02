@@ -1,6 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import {
   Search,
@@ -437,10 +438,9 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [searchParams, setSearchParams] = useState<URLSearchParams>(new URLSearchParams());
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    setSearchParams(new URLSearchParams(window.location.search));
     fetch('/api/auth/session', { cache: 'no-store' })
       .then(async (response) => {
         const data = await response.json().catch(() => ({ user: null }));
@@ -1059,8 +1059,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       )}
 
       {/* ── CONTACT ── */}
-      <section id="contact" className="border-y bg-slate-950">
-        <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+      <section id="contact" className="border-y bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
           <ContactSection />
         </div>
       </section>
@@ -1263,11 +1263,7 @@ export default function Home() {
   const [inputDomain, setInputDomain] = useState('');
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [searchParams, setSearchParams] = useState<URLSearchParams>(new URLSearchParams());
-
-  useEffect(() => {
-    setSearchParams(new URLSearchParams(window.location.search));
-  }, []);
+  const searchParams = useSearchParams();
 
   const isDevPaidPreview =
     process.env.NODE_ENV !== 'production' &&
