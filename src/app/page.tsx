@@ -1,7 +1,6 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import {
   Search,
@@ -44,6 +43,14 @@ import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
 import { getSupportEmail, getSupportWhatsappUrl } from '@/lib/support';
 import { motion, AnimatePresence } from 'framer-motion';
+
+function readInitialSearchParams() {
+  if (typeof window === 'undefined') {
+    return new URLSearchParams();
+  }
+
+  return new URLSearchParams(window.location.search);
+}
 
 // ============================================================
 // Global Styles (injected once)
@@ -438,7 +445,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   const [commerceLoading, setCommerceLoading] = useState<string | null>(null);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const searchParams = useSearchParams();
+  const [searchParams] = useState(readInitialSearchParams);
 
   useEffect(() => {
     fetch('/api/auth/session', { cache: 'no-store' })
@@ -1263,7 +1270,7 @@ export default function Home() {
   const [inputDomain, setInputDomain] = useState('');
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const searchParams = useSearchParams();
+  const [searchParams] = useState(readInitialSearchParams);
 
   const isDevPaidPreview =
     process.env.NODE_ENV !== 'production' &&
