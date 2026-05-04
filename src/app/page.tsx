@@ -103,6 +103,8 @@ const GlobalStyles = () => (
     }
 
     .gradient-text {
+      display: inline-block;
+      color: transparent;
       background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.7) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -666,7 +668,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             >
               Analyze Your SEO in{' '}
               <span className="relative inline-block">
-                <span className="gradient-text">60 Seconds</span>
+                <span className="text-black">60 Seconds</span>
                 <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-primary/10 rounded-full" />
               </span>
             </motion.h1>
