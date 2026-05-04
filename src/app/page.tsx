@@ -264,7 +264,7 @@ function Header({
           <img
             src="/all-in-one-seo-audit-logo.jpeg"
             alt="All In One SEO Audit Tool"
-            className="h-10 w-auto max-w-[180px] object-contain sm:h-11 sm:max-w-[220px]"
+            className="h-24 w-auto max-w-[3500px] object-contain sm:h-18 sm:max-w-[260px] md:h-24 md:max-w-[320px]"
           />
         </Link>
 
@@ -1116,7 +1116,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
               <img
                 src="/all-in-one-seo-audit-logo.jpeg"
                 alt="All In One SEO Audit Tool"
-                className="mb-4 h-12 w-auto max-w-[230px] object-contain"
+                className="mb-4 h-14 w-auto max-w-[260px] sm:h-16 sm:max-w-[280px] md:h-18 md:max-w-[300px] object-contain"
               />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Professional SEO audit platform trusted by thousands of businesses worldwide. Get actionable insights to improve your search rankings.
