@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSessionFromRequest } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
-import { Home, Users, Globe, CalendarDays, User as UserIcon, LayoutDashboard } from 'lucide-react';
+import { Users, Globe, CalendarDays, LayoutDashboard, PenLine, Newspaper, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
@@ -13,9 +13,21 @@ export const metadata: Metadata = {
 const navItems = [
   {
     name: 'Dashboard',
-    href: '/admin',
+    href: '/admin/commercial',
     icon: LayoutDashboard,
     description: 'Overview and quick admin metrics',
+  },
+  {
+    name: 'Add Blog',
+    href: '/admin/blogs/new',
+    icon: PenLine,
+    description: 'Create and publish blog content',
+  },
+  {
+    name: 'All Blogs',
+    href: '/admin/blogs',
+    icon: Newspaper,
+    description: 'Search, edit, and manage posts',
   },
   {
     name: 'All users',
@@ -36,9 +48,9 @@ const navItems = [
     description: 'Inspect incoming booking requests',
   },
   {
-    name: 'Profile',
+    name: 'Settings',
     href: '/admin/profile',
-    icon: UserIcon,
+    icon: Settings,
     description: 'Admin profile and account details',
   },
 ];

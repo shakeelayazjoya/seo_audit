@@ -20,9 +20,7 @@ export function ContactSection() {
   const whatsappUrl = getSupportWhatsappUrl('Hi, I need help with my SEO audit.');
 
   const validateForm = () => {
-    if (!name.trim()) return 'Name is required.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Please enter a valid email address.';
-    if (!phone.trim()) return 'Phone number is required.';
     if (message.trim().length < 10) return 'Message must be at least 10 characters.';
     return '';
   };
@@ -91,7 +89,7 @@ export function ContactSection() {
       <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr]">
             <div className="space-y-2">
-              <Label htmlFor="contact-name" className="text-sm text-slate-800">Name</Label>
+              <Label htmlFor="contact-name" className="text-sm text-slate-800">Name <span className="text-slate-400">(optional)</span></Label>
               <div className="relative">
                 <User2 className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -128,7 +126,7 @@ export function ContactSection() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact-phone" className="text-sm text-slate-800">Phone number</Label>
+              <Label htmlFor="contact-phone" className="text-sm text-slate-800">Phone number <span className="text-slate-400">(optional)</span></Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                 <Input

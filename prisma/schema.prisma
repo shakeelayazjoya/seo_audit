@@ -20,6 +20,7 @@ model User {
   sessions     Session[]
   leads        Lead[]
   requests     CommercialRequest[]
+  blogPosts    BlogPost[]
 }
 
 model Session {
@@ -145,4 +146,26 @@ model CommercialRequest {
 
   @@index([type, createdAt])
   @@index([provider, status, createdAt])
+}
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String
+  content         String
+  coverImageUrl   String?
+  coverImagePublicId String?
+  categories      String[]  @default([])
+  tags            String[]  @default([])
+  metaDescription String?
+  status          String    @default("draft")
+  authorId        String?
+  author          User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([createdAt])
 }

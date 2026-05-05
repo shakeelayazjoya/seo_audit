@@ -69,17 +69,11 @@ export async function POST(request: NextRequest) {
     const normalizedPhone = phone.replace(/\s+/g, ' ').trim();
     const errors: string[] = [];
 
-    if (!name) {
-      errors.push('Name is required.');
-    }
-
     if (!EMAIL_REGEX.test(email)) {
       errors.push('A valid email is required.');
     }
 
-    if (!normalizedPhone) {
-      errors.push('Phone number is required.');
-    } else if (!PHONE_REGEX.test(normalizedPhone)) {
+    if (normalizedPhone && !PHONE_REGEX.test(normalizedPhone)) {
       errors.push('Phone number format looks invalid.');
     }
 
@@ -121,7 +115,7 @@ export async function POST(request: NextRequest) {
     }> = [];
 
     if (inbox) {
-      const adminEmail = buildContactInquiryAdminEmail({ name, email, phone: normalizedPhone, message });
+      const adminEmail = buildContactInquiryAdminEmail({ name: name || 'Website visitor', email, phone: normalizedPhone, message });
       emailJobs.push({
         target: 'admin',
         job: sendEmailWithTimeout(
@@ -137,7 +131,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const confirmationEmail = buildContactConfirmationEmail({ name });
+    const confirmationEmail = buildContactConfirmationEmail({ name: name || 'there' });
     emailJobs.push({
       target: 'user',
       job: sendEmailWithTimeout(

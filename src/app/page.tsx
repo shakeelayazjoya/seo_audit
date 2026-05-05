@@ -244,10 +244,12 @@ function Header({
   }, []);
 
   const links = [
-    { label: 'Features', id: 'features' },
-    { label: 'Pricing', id: 'pricing' },
-    { label: 'Contact', id: 'contact' },
-    { label: 'FAQ', id: 'faq' },
+    { label: 'Features', href: '/features' },
+    { label: 'Pricing', href: '/pricing' },
+    { label: 'About', href: '/about' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'FAQ', href: '/faq' },
   ];
   const displayName = user?.name?.trim() || user?.email || 'Account';
   const isAdmin = user?.role === 'admin';
@@ -302,13 +304,13 @@ function Header({
             <>
               <div className="w-px h-5 bg-border mx-2" />
               {links.map((l) => (
-                <button
-                  key={l.id}
-                  onClick={() => onScrollTo(l.id)}
+                <Link
+                  key={l.href}
+                  href={l.href}
                   className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50"
                 >
                   {l.label}
-                </button>
+                </Link>
               ))}
             </>
           )}
@@ -412,13 +414,14 @@ function Header({
                 <>
                   <div className="h-px bg-border my-2" />
                   {links.map((l) => (
-                    <button
-                      key={l.id}
-                      onClick={() => { onScrollTo(l.id); setMobileOpen(false); }}
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
                     >
                       {l.label}
-                    </button>
+                    </Link>
                   ))}
                   <div className="pt-2">
                     <Button size="sm" className="w-full rounded-xl btn-primary-glow" onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}>
@@ -1127,9 +1130,12 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             <div>
               <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Product</h4>
               <ul className="space-y-2.5 text-xs text-muted-foreground">
-                <li><button onClick={() => scrollTo('features')} className="hover:text-foreground transition-colors">Features</button></li>
-                <li><button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">Pricing</button></li>
-                <li><button onClick={() => scrollTo('faq')} className="hover:text-foreground transition-colors">FAQ</button></li>
+                <li><Link href="/features" className="hover:text-foreground transition-colors">Features</Link></li>
+                <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
+                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
+                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+                <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
                 {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Audit History</Link></li>}
               </ul>
             </div>

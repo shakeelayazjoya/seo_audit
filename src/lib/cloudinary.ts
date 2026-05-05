@@ -67,6 +67,42 @@ async function destroyRawAsset(publicId: string) {
   }
 }
 
+async function destroyImageAsset(publicId: string) {
+  const cloudName = getRequiredEnv('CLOUDINARY_CLOUD_NAME');
+  const apiKey = getRequiredEnv('CLOUDINARY_API_KEY');
+  const apiSecret = getRequiredEnv('CLOUDINARY_API_SECRET');
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = buildSignature(
+    {
+      invalidate: 'true',
+      public_id: publicId,
+      timestamp,
+    },
+    apiSecret
+  );
+
+  const body = new URLSearchParams({
+    public_id: publicId,
+    timestamp,
+    api_key: apiKey,
+    invalidate: 'true',
+    signature,
+  });
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Cloudinary image destroy failed: ${detail}`);
+  }
+}
+
 export async function uploadLatestAuditPdf(input: {
   domain: string;
   filename: string;
@@ -109,6 +145,58 @@ export async function uploadLatestAuditPdf(input: {
   if (!response.ok) {
     const detail = await response.text();
     throw new Error(`Cloudinary upload failed: ${detail}`);
+  }
+
+  const payload = await response.json();
+
+  return {
+    publicId,
+    secureUrl: payload.secure_url as string,
+    assetId: payload.asset_id as string | undefined,
+    version: payload.version as number | undefined,
+  };
+}
+
+export async function uploadBlogCoverImage(input: {
+  file: File;
+  slug: string;
+  previousPublicId?: string | null;
+}) {
+  const cloudName = getRequiredEnv('CLOUDINARY_CLOUD_NAME');
+  const apiKey = getRequiredEnv('CLOUDINARY_API_KEY');
+  const apiSecret = getRequiredEnv('CLOUDINARY_API_SECRET');
+  const publicId = `seo-audit-blog/${input.slug.replace(/[^a-z0-9-]+/gi, '-').toLowerCase()}`;
+
+  if (input.previousPublicId) {
+    await destroyImageAsset(input.previousPublicId).catch(() => {});
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const uploadSignatureParams = {
+    folder: 'seo-audit-blog',
+    overwrite: 'true',
+    public_id: publicId,
+    timestamp,
+  };
+  const signature = buildSignature(uploadSignatureParams, apiSecret);
+
+  const formData = new FormData();
+  formData.append('file', input.file);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', timestamp);
+  formData.append('public_id', publicId);
+  formData.append('folder', 'seo-audit-blog');
+  formData.append('overwrite', 'true');
+  formData.append('signature', signature);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`Cloudinary image upload failed: ${detail}`);
   }
 
   const payload = await response.json();

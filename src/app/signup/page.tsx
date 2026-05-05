@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowRight, Loader2, Lock, Mail, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function SignupPage() {
@@ -39,31 +39,53 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-muted/20">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create account</CardTitle>
-          <CardDescription>Save audits, manage leads, and launch paid flows.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} />
-            <Input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
-            <Input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} />
+    <main className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto grid min-h-screen max-w-6xl px-4 py-8 lg:grid-cols-[1fr_420px] lg:items-center lg:gap-12">
+        <section className="hidden lg:block">
+          <Link href="/" className="inline-flex">
+            <img src="/all-in-one-seo-audit-logo.jpeg" alt="All In One SEO Audit Tool" className="h-16 w-auto max-w-[300px] object-contain" />
+          </Link>
+          <h1 className="mt-12 max-w-xl text-5xl font-semibold tracking-tight">Create your audit command center.</h1>
+          <p className="mt-5 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300">
+            Save reports, unlock full fix plans, and build a history of every website you audit.
+          </p>
+        </section>
+
+        <section className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Link href="/" className="mb-8 inline-flex lg:hidden">
+            <img src="/all-in-one-seo-audit-logo.jpeg" alt="All In One SEO Audit Tool" className="h-14 w-auto max-w-[240px] object-contain" />
+          </Link>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">Create account</p>
+            <h2 className="mt-2 text-2xl font-semibold">Start with a free account</h2>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Signup unlocks full reports and saved audit history.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <Input placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} className="h-11 pl-9" />
+            </div>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <Input type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 pl-9" />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+              <Input type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 pl-9" />
+            </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="h-11 w-full gap-2" disabled={loading}>
+              {loading ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
               {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link>
+
+          <p className="mt-5 text-center text-sm text-slate-500 dark:text-slate-400">
+            Already have an account? <Link href="/login" className="font-medium text-orange-600 hover:underline">Log in</Link>
           </p>
-        </CardContent>
-      </Card>
-    </div>
+        </section>
+      </div>
+    </main>
   );
 }
-
-
- 
- 
