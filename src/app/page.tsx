@@ -278,8 +278,8 @@ function Header({
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-background/98 backdrop-blur-xl shadow-sm border-b'
-          : 'bg-background/80 backdrop-blur-md border-b border-transparent'
+          ? 'border-b border-white/10 bg-black/95 shadow-2xl shadow-black/30 backdrop-blur-xl'
+          : 'border-b border-white/10 bg-black/90 backdrop-blur-xl'
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -295,21 +295,21 @@ function Header({
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {isAdmin ? (
-            <Link href="/admin" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+            <Link href="/admin" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
               Admin
             </Link>
           ) : (
             <>
               {navLinks.map((l) => (
                 l.href === '#dashboard' ? (
-                  <button key={l.href} onClick={() => onScrollTo('hero')} className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+                  <button key={l.href} onClick={() => onScrollTo('hero')} className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
                     {l.label}
                   </button>
                 ) : (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50"
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
                 >
                   {l.label}
                 </Link>
@@ -320,17 +320,17 @@ function Header({
 
           {!user && (
             <>
-              <div className="w-px h-5 bg-border mx-2" />
-              <Link href="/login" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+              <div className="w-px h-5 bg-white/15 mx-2" />
+              <Link href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
                 Login
               </Link>
-              <Link href="/signup" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+              <Link href="/signup" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
                 Sign Up
               </Link>
             </>
           )}
 
-          <Button asChild size="sm" className="ml-2 btn-primary-glow rounded-xl h-9 px-4 gap-1.5 shadow-sm">
+          <Button asChild size="sm" className="ml-2 h-9 rounded-xl bg-white px-4 text-black shadow-sm hover:bg-orange-50">
             <a href={bookingUrl} target="_blank" rel="noreferrer">
               <Phone className="size-3.5" />
               Book Call
@@ -341,7 +341,7 @@ function Header({
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="ml-1 rounded-full" aria-label="Open profile menu">
+                  <Button variant="outline" size="icon" className="ml-1 rounded-full border-white/20 bg-white/10 text-white hover:bg-white/20" aria-label="Open profile menu">
                     <User className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -362,7 +362,7 @@ function Header({
         </nav>
 
         {/* Mobile toggle */}
-        <Button variant="ghost" size="icon" className="md:hidden rounded-xl" onClick={() => setMobileOpen(!mobileOpen)}>
+        <Button variant="ghost" size="icon" className="rounded-xl text-white hover:bg-white/10 hover:text-white md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
         </Button>
       </div>
@@ -375,26 +375,26 @@ function Header({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="md:hidden overflow-hidden border-t bg-background/98"
+            className="overflow-hidden border-t border-white/10 bg-black/98 text-white md:hidden"
           >
             <div className="px-4 py-5 space-y-1">
               {user && (
-                <div className="flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 mb-3">
-                  <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center">
-                    <User className="size-4 text-primary" />
+                <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="flex size-8 items-center justify-center rounded-full bg-orange-500/20">
+                    <User className="size-4 text-orange-300" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold truncate">{displayName}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-xs text-slate-400">{user.email}</p>
                   </div>
                 </div>
               )}
               {!isAdmin && (
                 <>
-                  <div className="h-px bg-border my-2" />
+                  <div className="my-2 h-px bg-white/10" />
                   {navLinks.map((l) => (
                     l.href === '#dashboard' ? (
-                      <button key={l.href} onClick={() => { onScrollTo('hero'); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground">
+                      <button key={l.href} onClick={() => { onScrollTo('hero'); setMobileOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white">
                         {l.label}
                       </button>
                     ) : (
@@ -402,7 +402,7 @@ function Header({
                         key={l.href}
                         href={l.href}
                         onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
                       >
                         {l.label}
                       </Link>
@@ -410,17 +410,17 @@ function Header({
                   ))}
                   {!user && (
                     <>
-                      <div className="h-px bg-border my-2" />
-                      <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        Login <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
+                      <div className="my-2 h-px bg-white/10" />
+                      <Link href="/login" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10">
+                        Login <ChevronRight className="ml-auto size-3.5 text-slate-400" />
                       </Link>
-                      <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        Sign Up <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
+                      <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10">
+                        Sign Up <ChevronRight className="ml-auto size-3.5 text-slate-400" />
                       </Link>
                     </>
                   )}
                   <div className="pt-2">
-                    <Button asChild size="sm" className="w-full rounded-xl btn-primary-glow">
+                    <Button asChild size="sm" className="w-full rounded-xl bg-white text-black hover:bg-orange-50">
                       <a href={bookingUrl} target="_blank" rel="noreferrer" onClick={() => setMobileOpen(false)}>
                         <Phone className="size-3.5 mr-1.5" />
                         Book Call
@@ -428,7 +428,7 @@ function Header({
                     </Button>
                   </div>
                   {user && (
-                    <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => { setMobileOpen(false); void onLogout(); }} disabled={loggingOut}>
+                    <Button variant="outline" size="sm" className="w-full rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white" onClick={() => { setMobileOpen(false); void onLogout(); }} disabled={loggingOut}>
                       <LogOut className="size-3.5 mr-1.5" />
                       {loggingOut ? 'Signing out...' : 'Logout'}
                     </Button>
@@ -520,9 +520,9 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
     setCommerceLoading(flow);
     try {
       if (flow === 'implementation') {
-        window.location.href = getSupportWhatsappUrl(
+        window.location.assign(getSupportWhatsappUrl(
           `Hi, I want help with the full SEO implementation plan${url ? ` for ${url}` : ''}.`
-        );
+        ));
         return;
       }
 
@@ -538,7 +538,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
           (window as any).Calendly.initPopupWidget({ url: data.bookingUrl });
           return;
         }
-        window.location.href = data.url;
+        window.location.assign(data.url);
         return;
       }
       const response = await fetch('/api/commercial/checkout', {
@@ -548,7 +548,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Checkout failed');
-      if (data.url) window.location.href = data.url;
+      if (data.url) window.location.assign(data.url);
     } catch (error) {
       console.error('Commercial flow error:', error);
     } finally {
@@ -567,22 +567,22 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
 
   const pricingPlans = [
     {
+      name: 'Free Plan', price: '$0', period: 'preview',
+      description: 'Run a fast audit preview and see your highest-priority SEO opportunities',
+      features: ['Free audit preview', 'Top issues summary', 'Quick Wins preview', 'Preview PDF by email', 'Basic module scores', 'Login to unlock full details'],
+      cta: 'Start Free', popular: false,
+    },
+    {
       name: 'DIY Plan', price: '$99', period: 'one-time',
-      description: 'Perfect for developers and in-house teams',
+      description: 'Perfect for developers and in-house teams that want the full fix plan',
       features: ['Full PDF with all fix guides', '30-day audit history', 'Email support', 'Quick Wins prioritization', 'Module-by-module scoring', 'Impact vs Effort matrix'],
-      cta: 'Get Started', popular: false,
+      cta: 'Get Started', popular: true,
     },
     {
-      name: 'Strategy Plan', price: '$299', period: 'one-time',
-      description: 'For businesses ready to take action',
-      features: ['Everything in DIY Plan', '1-hour strategy call', 'Competitor comparison report', 'Priority email support', 'Monthly re-audit reminder', 'Custom action roadmap'],
-      cta: 'Get Strategy', popular: true,
-    },
-    {
-      name: 'Full Implementation', price: '$999', period: 'one-time',
-      description: 'Done-for-you SEO overhaul',
-      features: ['Everything in Strategy Plan', 'Done-for-you fixes', 'Monthly re-audit included', 'Dedicated account manager', 'Slack support channel', 'White-label PDF reports'],
-      cta: 'Contact Sales', popular: false,
+      name: 'Strategy Plan', price: '$129', period: 'one-time',
+      description: 'For businesses that want expert guidance and a clear action roadmap',
+      features: ['Everything in DIY Plan', 'Strategy call booking', 'Competitor comparison report', 'Priority email support', 'Monthly re-audit reminder', 'Custom action roadmap'],
+      cta: 'Get Strategy', popular: false,
     },
   ];
 
@@ -642,14 +642,14 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       )}
 
       {/* ── HERO ── */}
-      <section id="hero" className="relative overflow-hidden border-b">
+      <section id="hero" className="relative overflow-hidden border-b border-white/10 bg-black text-white">
         {/* Grid background */}
-        <div className="absolute inset-0 hero-grid opacity-60" />
+        <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(to_right,rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
         {/* Radial gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(249,115,22,0.22),transparent_36%),linear-gradient(180deg,rgba(0,0,0,0.45),#000_82%)]" />
         {/* Accent blobs */}
-        <div className="absolute top-20 left-1/4 size-64 rounded-full bg-primary/6 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 right-1/4 size-48 rounded-full bg-primary/4 blur-3xl pointer-events-none" />
+        <div className="absolute top-20 left-1/4 size-64 rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 right-1/4 size-48 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <motion.div
@@ -661,7 +661,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             <motion.div variants={itemVariants}>
               <Badge
                 variant="secondary"
-                className="mb-2 px-4 py-1.5 rounded-full text-xs font-semibold gap-2 border border-primary/20 bg-primary/5 text-primary shadow-sm"
+                className="mb-2 gap-2 rounded-full border border-orange-300/25 bg-white/10 px-4 py-1.5 text-xs font-semibold text-orange-200 shadow-sm backdrop-blur"
               >
                 <Sparkles className="size-3" />
                 AI-Powered SEO Analysis
@@ -675,12 +675,12 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             >
               Analyze Your SEO in{' '}
               <span className="relative inline-block">
-                <span className="text-black">60 Seconds</span>
-                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 to-primary/10 rounded-full" />
+                <span className="text-orange-200">60 Seconds</span>
+                <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-300/80 to-orange-500/20 rounded-full" />
               </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <motion.p variants={itemVariants} className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Get a comprehensive SEO audit across 7 dimensions with prioritized action items,
               quick wins, and a step-by-step fix guide — completely free.
             </motion.p>
@@ -693,11 +693,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             >
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr_1fr_auto]">
                 <div className="relative flex-1 group">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 transition-colors group-focus-within:text-orange-300" />
                   <Input
                     type="url"
                     placeholder="Enter your domain (e.g., example.com)"
-                    className="pl-11 h-13 text-base rounded-2xl border-border/60 bg-background/80 focus:bg-background shadow-sm transition-all focus:shadow-md focus:border-primary/50"
+                    className="pl-11 h-13 text-base rounded-2xl border-white/15 bg-white/95 text-slate-950 placeholder:text-slate-500 shadow-xl shadow-black/20 transition-all focus:border-orange-300 focus:bg-white focus:shadow-orange-500/10"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     style={{ height: '52px' }}
@@ -705,11 +705,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                   />
                 </div>
                 <div className="relative flex-1 group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 transition-colors group-focus-within:text-orange-300" />
                   <Input
                     type="email"
                     placeholder="Enter your email"
-                    className="pl-11 h-13 text-base rounded-2xl border-border/60 bg-background/80 focus:bg-background shadow-sm transition-all focus:shadow-md focus:border-primary/50"
+                    className="pl-11 h-13 text-base rounded-2xl border-white/15 bg-white/95 text-slate-950 placeholder:text-slate-500 shadow-xl shadow-black/20 transition-all focus:border-orange-300 focus:bg-white focus:shadow-orange-500/10"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{ height: '52px' }}
@@ -719,7 +719,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 <Button
                   type="submit"
                   size="lg"
-                  className="h-13 px-7 rounded-2xl btn-primary-glow shadow-md hover:shadow-lg transition-all font-semibold gap-2"
+                  className="h-13 gap-2 rounded-2xl bg-orange-500 px-7 font-semibold text-white shadow-xl shadow-orange-950/40 transition-all hover:bg-orange-400 hover:shadow-orange-500/20"
                   style={{ height: '52px' }}
                 >
                   <Search className="size-4" />
@@ -731,8 +731,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             {/* Trust badges */}
             <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center gap-3 mt-2">
               {['URL + email required', 'Preview PDF emailed automatically', '7 SEO modules', 'Full report after login'].map((text) => (
-                <span key={text} className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/60 rounded-full px-3 py-1.5 border border-border/50">
-                  <CheckCircle2 className="size-3 text-emerald-500" />
+                <span key={text} className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs text-slate-300 backdrop-blur">
+                  <CheckCircle2 className="size-3 text-emerald-300" />
                   {text}
                 </span>
               ))}
@@ -746,12 +746,12 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 { value: issueCount > 0 ? issueCount.toLocaleString() : '0', label: 'Issues Logged', icon: <TrendingUp className="size-4" /> },
                 { value: trackedDomains > 0 ? `${averageScore}/100` : 'N/A', label: trackedDomains > 0 ? 'Avg Score' : 'Score Pending', icon: <Award className="size-4" /> },
               ].map((stat) => (
-                <div key={stat.label} className="stat-card text-center group cursor-default">
-                  <div className="flex items-center justify-center gap-1.5 mb-1 text-muted-foreground group-hover:text-primary transition-colors">
+                <div key={stat.label} className="group cursor-default rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-center shadow-2xl shadow-black/20 backdrop-blur transition hover:border-orange-300/30 hover:bg-white/[0.09]">
+                  <div className="flex items-center justify-center gap-1.5 mb-1 text-slate-400 group-hover:text-orange-200 transition-colors">
                     {stat.icon}
                   </div>
                   <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>{stat.value}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -873,23 +873,23 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
+      <section id="pricing" className="bg-black px-4 py-20 text-white sm:px-6 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <Badge variant="outline" className="mb-3 px-4 py-1.5 rounded-full text-xs font-medium">Simple Pricing</Badge>
+          <Badge variant="outline" className="mb-3 rounded-full border-orange-300/30 bg-white/10 px-4 py-1.5 text-xs font-medium text-orange-200">Simple Pricing</Badge>
           <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.025em' }} className="text-3xl sm:text-4xl mb-3">
             Choose Your Plan
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className="text-slate-300 max-w-xl mx-auto">
             Start free, upgrade when you need detailed fix guides and expert guidance
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
           {pricingPlans.map((plan, idx) => (
             <motion.div
               key={plan.name}
@@ -901,14 +901,14 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             >
               <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${
                 plan.popular
-                  ? 'border-primary/40 shadow-lg shadow-primary/10 pricing-popular'
-                  : 'border-border/60'
+                  ? 'border-orange-300/40 bg-white text-slate-950 shadow-2xl shadow-orange-950/30'
+                  : 'border-white/10 bg-white/[0.06] text-white shadow-xl shadow-black/20 backdrop-blur'
               }`}>
                 {plan.popular && (
                   <>
-                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-300 via-orange-500 to-orange-300" />
                     <div className="absolute -top-px left-1/2 -translate-x-1/2 -translate-y-full">
-                      <div className="bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-t-lg shadow-sm">
+                      <div className="bg-orange-500 text-white text-xs font-semibold px-4 py-1 rounded-t-lg shadow-sm">
                         Most Popular
                       </div>
                     </div>
@@ -918,31 +918,35 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                   <CardTitle style={{ fontFamily: 'var(--font-display)', fontWeight: 700, letterSpacing: '-0.02em' }} className="text-lg">
                     {plan.name}
                   </CardTitle>
-                  <CardDescription className="text-xs leading-relaxed">{plan.description}</CardDescription>
+                  <CardDescription className={`text-xs leading-relaxed ${plan.popular ? 'text-slate-600' : 'text-slate-300'}`}>{plan.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-5 px-6 flex-1">
                   <div className="mb-5 flex items-end gap-1.5">
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.03em' }} className="text-4xl">{plan.price}</span>
-                    <span className="text-sm text-muted-foreground mb-1">{plan.period}</span>
+                    <span className={`mb-1 text-sm ${plan.popular ? 'text-slate-500' : 'text-slate-400'}`}>{plan.period}</span>
                   </div>
-                  <Separator className="mb-5" />
+                  <Separator className={`mb-5 ${plan.popular ? '' : 'bg-white/10'}`} />
                   <ul className="space-y-3">
                     {plan.features.map((feat) => (
                       <li key={feat} className="flex items-start gap-2.5 text-sm">
-                        <CheckCircle2 className="size-4 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-muted-foreground">{feat}</span>
+                        <CheckCircle2 className={`size-4 shrink-0 mt-0.5 ${plan.popular ? 'text-orange-500' : 'text-emerald-300'}`} />
+                        <span className={plan.popular ? 'text-slate-600' : 'text-slate-300'}>{feat}</span>
                       </li>
                     ))}
                   </ul>
                 </CardContent>
                 <CardFooter className="px-6 pb-6 pt-4">
                   <Button
-                    className={`w-full rounded-xl font-semibold gap-2 transition-all ${plan.popular ? 'btn-primary-glow shadow-md hover:shadow-lg' : ''}`}
+                    className={`w-full rounded-xl font-semibold gap-2 transition-all ${
+                      plan.popular
+                        ? 'bg-orange-500 text-white shadow-md hover:bg-orange-400 hover:shadow-lg'
+                        : 'border-white/15 bg-white/10 text-white hover:bg-white hover:text-black'
+                    }`}
                     variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => startCommercialFlow(plan.name === 'Strategy Plan' ? 'strategy' : plan.name === 'Full Implementation' ? 'implementation' : 'diy')}
+                    onClick={() => plan.name === 'Free Plan' ? scrollTo('hero') : startCommercialFlow(plan.name === 'Strategy Plan' ? 'strategy' : 'diy')}
                     disabled={!!commerceLoading}
                   >
-                    {commerceLoading && ((commerceLoading === 'diy' && plan.name === 'DIY Plan') || (commerceLoading === 'strategy' && plan.name === 'Strategy Plan') || (commerceLoading === 'implementation' && plan.name === 'Full Implementation'))
+                    {commerceLoading && ((commerceLoading === 'diy' && plan.name === 'DIY Plan') || (commerceLoading === 'strategy' && plan.name === 'Strategy Plan'))
                       ? <><Loader2 className="size-4 animate-spin" /> Opening…</>
                       : <>{plan.cta} <ArrowRight className="size-3.5" /></>
                     }
@@ -1068,8 +1072,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
 
       {/* ── RECENT AUDITS ── */}
       {sessionUser && pastAudits.length > 0 && (
-        <section className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-          <AuditHistory audits={pastAudits} onSelectAudit={(a) => onAnalyze(a.id)} />
+        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
+          <AuditHistory audits={pastAudits} limit={3} variant="cards" onSelectAudit={(a) => onAnalyze(a.id)} />
         </section>
       )}
 
@@ -1118,7 +1122,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t bg-muted/20">
+      <footer className="border-t border-white/10 bg-black text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
             <div>
@@ -1127,48 +1131,48 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 alt="All In One SEO Audit Tool"
                 className="mb-4 h-14 w-auto max-w-[260px] sm:h-16 sm:max-w-[280px] md:h-18 md:max-w-[300px] object-contain"
               />
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-slate-400 leading-relaxed">
                 Professional SEO audit platform trusted by thousands of businesses worldwide. Get actionable insights to improve your search rankings.
               </p>
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Product</h4>
-              <ul className="space-y-2.5 text-xs text-muted-foreground">
-                <li><Link href="/features" className="hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/about" className="hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
-                {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Audit History</Link></li>}
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
+                {sessionUser && <li><Link href="/history" className="hover:text-white transition-colors">Audit History</Link></li>}
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Audit Modules</h4>
-              <ul className="space-y-2.5 text-xs text-muted-foreground">
-                <li><Link href="/technical-seo-audit" className="hover:text-foreground transition-colors">Technical SEO</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">Core Web Vitals</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">On-Page & Content</Link></li>
-                <li><Link href="/cro-audit" className="hover:text-foreground transition-colors">CRO Analysis</Link></li>
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><Link href="/technical-seo-audit" className="hover:text-white transition-colors">Technical SEO</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">Core Web Vitals</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">On-Page & Content</Link></li>
+                <li><Link href="/cro-audit" className="hover:text-white transition-colors">CRO Analysis</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Growth Pages</h4>
-              <ul className="space-y-2.5 text-xs text-muted-foreground">
-                <li><Link href="/ai-seo-audit" className="hover:text-foreground transition-colors">AI SEO Audit</Link></li>
-                <li><Link href="/local-seo-audit" className="hover:text-foreground transition-colors">Local SEO Audit</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-foreground transition-colors">SEO Audit Tool</Link></li>
-                <li><a href={`mailto:${supportEmail}`} className="hover:text-foreground transition-colors">{supportEmail}</a></li>
-                {sessionUser && <li><Link href="/history" className="hover:text-foreground transition-colors">Domain Trends</Link></li>}
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><Link href="/ai-seo-audit" className="hover:text-white transition-colors">AI SEO Audit</Link></li>
+                <li><Link href="/local-seo-audit" className="hover:text-white transition-colors">Local SEO Audit</Link></li>
+                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">SEO Audit Tool</Link></li>
+                <li><a href={`mailto:${supportEmail}`} className="hover:text-white transition-colors">{supportEmail}</a></li>
+                {sessionUser && <li><Link href="/history" className="hover:text-white transition-colors">Domain Trends</Link></li>}
               </ul>
             </div>
           </div>
-          <Separator className="mb-6" />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <Separator className="mb-6 bg-white/10" />
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
             <p>© 2025 SEO Audit Platform. All rights reserved.</p>
             <div className="flex gap-5">
-              <span className="hover:text-foreground cursor-pointer transition-colors">Privacy Policy</span>
-              <span className="hover:text-foreground cursor-pointer transition-colors">Terms of Service</span>
+              <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
+              <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
             </div>
           </div>
         </div>
