@@ -30,6 +30,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -243,7 +251,7 @@ function Header({
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  const links = [
+  const loggedOutLinks = [
     { label: 'Features', href: '/features' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'About', href: '/about' },
@@ -251,6 +259,18 @@ function Header({
     { label: 'Contact', href: '/contact' },
     { label: 'FAQ', href: '/faq' },
   ];
+  const loggedInLinks = [
+    { label: 'Features', href: '/features' },
+    { label: 'Pricing', href: '/pricing' },
+    { label: 'About', href: '/about' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Audit History', href: '/history' },
+    { label: 'Dashboard', href: '#dashboard' },
+    { label: 'FAQ', href: '/faq' },
+    { label: 'Contact', href: '/contact' },
+  ];
+  const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
+  const navLinks = user ? loggedInLinks : loggedOutLinks;
   const displayName = user?.name?.trim() || user?.email || 'Account';
   const isAdmin = user?.role === 'admin';
 
@@ -274,23 +294,33 @@ function Header({
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {user ? (
-            isAdmin ? (
-              <Link href="/admin" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
-                Admin
-              </Link>
-            ) : (
-              <>
-                <Link href="/history" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
-                  My History
-                </Link>
-                <button onClick={() => onScrollTo('hero')} className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
-                  Dashboard
-                </button>
-              </>
-            )
+          {isAdmin ? (
+            <Link href="/admin" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+              Admin
+            </Link>
           ) : (
             <>
+              {navLinks.map((l) => (
+                l.href === '#dashboard' ? (
+                  <button key={l.href} onClick={() => onScrollTo('hero')} className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
+                    {l.label}
+                  </button>
+                ) : (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50"
+                >
+                  {l.label}
+                </Link>
+                )
+              ))}
+            </>
+          )}
+
+          {!user && (
+            <>
+              <div className="w-px h-5 bg-border mx-2" />
               <Link href="/login" className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50">
                 Login
               </Link>
@@ -300,54 +330,34 @@ function Header({
             </>
           )}
 
-          {!isAdmin && (
-            <>
-              <div className="w-px h-5 bg-border mx-2" />
-              {links.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="nav-link px-3 py-1.5 rounded-lg hover:bg-muted/50"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </>
-          )}
+          <Button asChild size="sm" className="ml-2 btn-primary-glow rounded-xl h-9 px-4 gap-1.5 shadow-sm">
+            <a href={bookingUrl} target="_blank" rel="noreferrer">
+              <Phone className="size-3.5" />
+              Book Call
+            </a>
+          </Button>
 
           {user && (
             <>
-              <div className="w-px h-5 bg-border mx-2" />
-              <div className="flex items-center gap-2 rounded-full border border-border/60 bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-                <div className="size-5 rounded-full bg-primary/15 flex items-center justify-center">
-                  <User className="size-3 text-primary" />
-                </div>
-                <span className="max-w-32 truncate font-medium">{displayName}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => void onLogout()}
-                disabled={loggingOut}
-                className="text-muted-foreground hover:text-foreground gap-1.5 h-8 px-3 rounded-lg"
-              >
-                <LogOut className="size-3.5" />
-                {loggingOut ? 'Signing out…' : 'Logout'}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="ml-1 rounded-full" aria-label="Open profile menu">
+                    <User className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel>
+                    <span className="block truncate text-sm font-semibold">{displayName}</span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">{user.email}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => void onLogout()} disabled={loggingOut} className="cursor-pointer">
+                    <LogOut className="size-4" />
+                    {loggingOut ? 'Signing out...' : 'Logout'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
-          )}
-
-          {!isAdmin && !user && (
-            <Button size="sm" onClick={() => onScrollTo('hero')} className="ml-2 btn-primary-glow rounded-xl h-9 px-4 gap-1.5 shadow-sm">
-              <Search className="size-3.5" />
-              Free Audit
-            </Button>
-          )}
-          {!isAdmin && user && (
-            <Button size="sm" onClick={() => onScrollTo('hero')} className="ml-2 btn-primary-glow rounded-xl h-9 px-4 gap-1.5 shadow-sm">
-              <Search className="size-3.5" />
-              Free Audit
-            </Button>
           )}
         </nav>
 
@@ -368,67 +378,61 @@ function Header({
             className="md:hidden overflow-hidden border-t bg-background/98"
           >
             <div className="px-4 py-5 space-y-1">
-              {user ? (
-                <>
-                  <div className="flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 mb-3">
-                    <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center">
-                      <User className="size-4 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">{displayName}</p>
-                      <p className="text-xs text-muted-foreground">{isAdmin ? 'Administrator' : 'Member'}</p>
-                    </div>
+              {user && (
+                <div className="flex items-center gap-3 rounded-xl border bg-muted/30 px-4 py-3 mb-3">
+                  <div className="size-8 rounded-full bg-primary/15 flex items-center justify-center">
+                    <User className="size-4 text-primary" />
                   </div>
-                  {isAdmin ? (
-                    <Link href="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      Admin Dashboard <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
-                    </Link>
-                  ) : (
-                    <>
-                      <Link href="/history" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        My History <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
-                      </Link>
-                      <button onClick={() => { onScrollTo('hero'); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                        Dashboard <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
-                      </button>
-                    </>
-                  )}
-                  <div className="pt-2">
-                    <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => { setMobileOpen(false); void onLogout(); }} disabled={loggingOut}>
-                      <LogOut className="size-3.5 mr-1.5" />
-                      {loggingOut ? 'Signing out…' : 'Logout'}
-                    </Button>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    Login <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
-                  </Link>
-                  <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    Sign Up <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
-                  </Link>
-                </>
+                </div>
               )}
               {!isAdmin && (
                 <>
                   <div className="h-px bg-border my-2" />
-                  {links.map((l) => (
-                    <Link
-                      key={l.href}
-                      href={l.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
-                    >
-                      {l.label}
-                    </Link>
+                  {navLinks.map((l) => (
+                    l.href === '#dashboard' ? (
+                      <button key={l.href} onClick={() => { onScrollTo('hero'); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground">
+                        {l.label}
+                      </button>
+                    ) : (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
+                      >
+                        {l.label}
+                      </Link>
+                    )
                   ))}
+                  {!user && (
+                    <>
+                      <div className="h-px bg-border my-2" />
+                      <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        Login <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
+                      </Link>
+                      <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 w-full text-sm py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        Sign Up <ChevronRight className="size-3.5 ml-auto text-muted-foreground" />
+                      </Link>
+                    </>
+                  )}
                   <div className="pt-2">
-                    <Button size="sm" className="w-full rounded-xl btn-primary-glow" onClick={() => { onScrollTo('hero'); setMobileOpen(false); }}>
-                      <Search className="size-3.5 mr-1.5" />
-                      Free Audit
+                    <Button asChild size="sm" className="w-full rounded-xl btn-primary-glow">
+                      <a href={bookingUrl} target="_blank" rel="noreferrer" onClick={() => setMobileOpen(false)}>
+                        <Phone className="size-3.5 mr-1.5" />
+                        Book Call
+                      </a>
                     </Button>
                   </div>
+                  {user && (
+                    <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => { setMobileOpen(false); void onLogout(); }} disabled={loggingOut}>
+                      <LogOut className="size-3.5 mr-1.5" />
+                      {loggingOut ? 'Signing out...' : 'Logout'}
+                    </Button>
+                  )}
                 </>
               )}
             </div>
