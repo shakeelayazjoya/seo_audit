@@ -165,6 +165,12 @@ export function IssueAccordion({ issues, domain = '', isPaid = false, onCTAClick
                         <p className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-1">Fix Guide</p>
                         <p>{issue.fixGuide}</p>
                       </div>
+                      <div className="flex justify-end">
+                        <Button variant="outline" size="sm" className="gap-2" onClick={onCTAClick}>
+                          <Lock className="size-3" />
+                          Get Full Fix Plan
+                        </Button>
+                      </div>
                       {/* <DeveloperRecommendation recommendation={getIssueRecommendation(issue)} /> */}
                     </div>
                   ) : (

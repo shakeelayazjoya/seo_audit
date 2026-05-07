@@ -48,7 +48,7 @@ const modules = [
     color: 'text-cyan-400',
     bg: 'bg-cyan-500/10',
     title: 'AI SEO & E-E-A-T',
-    desc: 'Author bios, topical authority clusters, content freshness signals, LLMS.txt, and AI search readiness scoring aligned with Google's E-E-A-T framework.',
+    desc: 'Author bios, topical authority clusters, content freshness signals, LLMS.txt, and AI search readiness scoring aligned with Google\'s E-E-A-T framework.',
     points: ['Author expertise signals', 'Topical cluster analysis', 'Content freshness checks', 'AI readiness scoring'],
   },
 ];

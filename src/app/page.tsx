@@ -34,7 +34,6 @@ import {
 } from '@/components/ui/accordion';
 import { AuditDashboard } from '@/components/seo/AuditDashboard';
 import { AuditHistory } from '@/components/seo/AuditHistory';
-import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import { ContactSection } from '@/components/seo/ContactSection';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
@@ -241,6 +240,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [searchParams] = useState(readInitialSearchParams);
+  const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
 
   useEffect(() => {
     fetch('/api/auth/session', { cache: 'no-store' })
@@ -839,7 +839,17 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                       : 'border-white/15 bg-white/10 text-white hover:bg-white hover:text-black'
                       }`}
                     variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => plan.name === 'Free Plan' ? scrollTo('hero') : startCommercialFlow(plan.name === 'Strategy Plan' ? 'strategy' : 'diy')}
+                    onClick={() => {
+                      if (plan.name === 'Free Plan') {
+                        scrollTo('hero');
+                        return;
+                      }
+                      if (plan.name === 'DIY Plan') {
+                        window.location.assign(bookingUrl);
+                        return;
+                      }
+                      void startCommercialFlow('strategy');
+                    }}
                     disabled={!!commerceLoading}
                   >
                     {commerceLoading && ((commerceLoading === 'diy' && plan.name === 'DIY Plan') || (commerceLoading === 'strategy' && plan.name === 'Strategy Plan'))
@@ -1152,7 +1162,6 @@ export default function Home() {
   const [pendingAuditId, setPendingAuditId] = useState<string | null>(null);
   const [inputDomain, setInputDomain] = useState('');
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [searchParams] = useState(readInitialSearchParams);
 
   const isDevPaidPreview =
@@ -1337,12 +1346,11 @@ export default function Home() {
               audit={currentAudit}
               onBack={handleBack}
               isPaid={isPaid}
-              onUpgradeClick={() => setShowLoginModal(true)}
+              onUpgradeClick={() => window.location.assign('/contact')}
             />
           </motion.div>
         )}
       </AnimatePresence>
-      <LoginPromptModal open={showLoginModal} onOpenChange={setShowLoginModal} />
     </div>
   );
 }

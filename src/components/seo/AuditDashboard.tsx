@@ -180,17 +180,25 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
             </div>
             <div className="flex items-center gap-2">
               {isPaid && (
-                <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-                  <Link href={`/api/report/${audit.id}`} target="_blank">
-                    <Download className="size-3 mr-1" />
-                    Export PDF
-                  </Link>
-                </Button>
+                <>
+                  <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+                    <Link href={`/api/report/${audit.id}`} target="_blank">
+                      <Download className="size-3 mr-1" />
+                      Export PDF
+                    </Link>
+                  </Button>
+                  <Button size="sm" onClick={onUpgradeClick}>
+                    <ShieldCheck className="size-3.5" />
+                    Get Full Fix Plan
+                  </Button>
+                </>
               )}
               {!isPaid && (
-                <Button size="sm" onClick={onUpgradeClick}>
-                  <ShieldCheck className="size-3.5" />
-                  Sign In For Full Report
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/api/report/${audit.id}`} target="_blank">
+                    <Download className="size-3 mr-1" />
+                    Download PDF
+                  </Link>
                 </Button>
               )}
             </div>
@@ -504,17 +512,36 @@ export function AuditDashboard({ audit, onBack, isPaid = false, onUpgradeClick }
               >
                 <Card className="bg-primary text-primary-foreground border-0">
                   <CardContent className="pt-6">
-                    <h3 className="font-semibold mb-1">Unlock the Full Report</h3>
+                    <h3 className="font-semibold mb-1">Get Your Full Audit PDF</h3>
                     <p className="text-sm text-primary-foreground/80 mb-4">
-                      Sign in to unlock detailed fix guides, the full PDF report, and every developer recommendation.
+                      Download the full PDF report now, then contact us for the complete implementation plan.
                     </p>
-                    <Button
-                      variant="secondary"
-                      className="w-full"
-                      onClick={onUpgradeClick}
-                    >
+                    <Button asChild variant="secondary" className="w-full">
+                      <Link href={`/api/report/${audit.id}`} target="_blank">
+                        <Download className="size-4" />
+                        Download PDF
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {isPaid && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+              >
+                <Card className="bg-primary text-primary-foreground border-0">
+                  <CardContent className="pt-6">
+                    <h3 className="font-semibold mb-1">Need The Full Fix Plan?</h3>
+                    <p className="text-sm text-primary-foreground/80 mb-4">
+                      Get complete implementation support from our team for your audit results.
+                    </p>
+                    <Button variant="secondary" className="w-full" onClick={onUpgradeClick}>
                       <ShieldCheck className="size-4" />
-                      Sign In To Unlock
+                      Get Full Fix Plan
                     </Button>
                   </CardContent>
                 </Card>
