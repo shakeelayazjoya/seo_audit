@@ -68,14 +68,14 @@ export function ContactSection() {
     <div className="mx-auto w-full max-w-6xl px-4 py-16">
       {/* Header */}
       <div className="mb-12 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1.5 text-xs font-medium text-slate-600 mb-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/25 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-orange-400 mb-4">
           <MessageSquare className="size-4" />
-          GET IN TOUCH
+          Get in touch
         </div>
-        <h2 className="text-4xl font-semibold tracking-tight text-slate-950 mb-4">
+        <h2 className="text-4xl font-bold tracking-tight text-white mb-4">
           Let&apos;s start a conversation
         </h2>
-        <p className="mx-auto max-w-2xl text-lg text-slate-600">
+        <p className="mx-auto max-w-2xl text-base text-slate-400">
           Have questions about your SEO audit, need implementation help, or just want to say hello? 
           We reply fast via email and WhatsApp.
         </p>
@@ -126,19 +126,19 @@ export function ContactSection() {
 
         {/* Contact Form */}
         <div className="lg:col-span-3">
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-100">
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-xl">
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-name" className="text-slate-700">Name <span className="text-slate-400 text-xs">(optional)</span></Label>
+                  <Label htmlFor="contact-name" className="text-slate-300">Name <span className="text-slate-500 text-xs">(optional)</span></Label>
                   <div className="relative">
-                    <User2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
+                    <User2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-4" />
                     <Input
                       id="contact-name"
                       value={name}
                       onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
-                      className="h-12 border-slate-200 pl-11 focus:border-slate-400 rounded-xl"
+                      className="h-12 border-white/10 bg-slate-800 pl-11 text-white placeholder:text-slate-600 focus:border-orange-500/50 rounded-xl"
                       placeholder="John Doe"
                       disabled={loading}
                     />
@@ -147,15 +147,15 @@ export function ContactSection() {
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-email" className="text-slate-700">Email <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="contact-email" className="text-slate-300">Email <span className="text-orange-400">*</span></Label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-4" />
                     <Input
                       id="contact-email"
                       type="email"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); if (error) setError(''); }}
-                      className="h-12 border-slate-200 pl-11 focus:border-slate-400 rounded-xl"
+                      className="h-12 border-white/10 bg-slate-800 pl-11 text-white placeholder:text-slate-600 focus:border-orange-500/50 rounded-xl"
                       placeholder="you@example.com"
                       disabled={loading}
                     />
@@ -165,14 +165,14 @@ export function ContactSection() {
 
               {/* Phone */}
               <div className="space-y-2">
-                <Label htmlFor="contact-phone" className="text-slate-700">Phone number <span className="text-slate-400 text-xs">(optional)</span></Label>
+                <Label htmlFor="contact-phone" className="text-slate-300">Phone number <span className="text-slate-500 text-xs">(optional)</span></Label>
                 <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-4" />
                   <Input
                     id="contact-phone"
                     value={phone}
                     onChange={(e) => { setPhone(e.target.value); if (error) setError(''); }}
-                    className="h-12 border-slate-200 pl-11 focus:border-slate-400 rounded-xl"
+                    className="h-12 border-white/10 bg-slate-800 pl-11 text-white placeholder:text-slate-600 focus:border-orange-500/50 rounded-xl"
                     placeholder="+92 300 1234567"
                     disabled={loading}
                   />
@@ -181,12 +181,12 @@ export function ContactSection() {
 
               {/* Message */}
               <div className="space-y-2">
-                <Label htmlFor="contact-message" className="text-slate-700">How can we help you? <span className="text-red-500">*</span></Label>
+                <Label htmlFor="contact-message" className="text-slate-300">How can we help you? <span className="text-orange-400">*</span></Label>
                 <Textarea
                   id="contact-message"
                   value={message}
                   onChange={(e) => { setMessage(e.target.value); if (error) setError(''); }}
-                  className="min-h-32 border-slate-200 focus:border-slate-400 rounded-2xl resize-y"
+                  className="min-h-32 border-white/10 bg-slate-800 text-white placeholder:text-slate-600 focus:border-orange-500/50 rounded-2xl resize-y"
                   placeholder="Paste your website URL, describe your project, or ask any question..."
                   disabled={loading}
                 />
@@ -195,14 +195,14 @@ export function ContactSection() {
               {/* Status & Submit */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
                 <div className="min-h-[1.25rem]">
-                  {error && <p className="text-sm text-red-600 font-medium">{error}</p>}
-                  {success && <p className="text-sm text-emerald-600 font-medium">{success}</p>}
+                  {error && <p className="text-sm text-red-400 font-medium">{error}</p>}
+                  {success && <p className="text-sm text-emerald-400 font-medium">{success}</p>}
                 </div>
 
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="h-12 px-8 rounded-2xl bg-slate-950 hover:bg-black text-white text-base font-medium shadow-lg shadow-slate-900/30 hover:shadow-xl transition-all active:scale-[0.985]"
+                  className="h-12 px-8 rounded-2xl bg-orange-500 hover:bg-orange-400 text-white text-base font-medium shadow-lg shadow-orange-500/20 hover:shadow-xl transition-all active:scale-[0.985]"
                 >
                   {loading ? (
                     <>

@@ -92,7 +92,7 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/seo-audit-tool" className="hover:text-white transition-colors">
+                <Link href="/on-page-content" className="hover:text-white transition-colors">
                   On-Page & Content
                 </Link>
               </li>
@@ -108,7 +108,7 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/seo-audit-tool" className="hover:text-white transition-colors">
+                <Link href="/schema-markup" className="hover:text-white transition-colors">
                   Schema Markup
                 </Link>
               </li>

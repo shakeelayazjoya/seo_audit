@@ -5,20 +5,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { MarketingShell } from '@/components/marketing/MarketingShell';
 
 export const metadata: Metadata = {
-  title: "SEO Audit Platform — Free Website SEO Analysis Tool",
+  title: "All In One SEO Audit Tool — Free Technical, CRO, Local and AI SEO Check in 60 Seconds",
   description:
-    "Get a comprehensive SEO audit across 7 dimensions including Technical SEO, Core Web Vitals, On-Page, CRO, Local SEO, AI/E-E-A-T, and Schema Markup. Free instant analysis with prioritized action items.",
+    "Run a free all-in-one SEO audit covering Technical SEO, Core Web Vitals, CRO, Local SEO, AI Visibility, and Schema. Get your complete score with a downloadable PDF report instantly.",
   keywords: [
-    "SEO audit",
-    "SEO analysis tool",
-    "website SEO checker",  
-    "technical SEO audit",
-    "Core Web Vitals",
-    "free SEO report",
-    "SEO optimization",
-    "website audit tool",
-    "CRO analysis",
-    "schema markup validator",
+     'all in one SEO audit tool',
+    'SEO audit',
+    'technical SEO audit',
+    'CRO audit',
+    'local SEO audit',
+    'AI SEO audit',
+    'schema audit',
+    'free SEO report',
   ],
   authors: [{ name: "SEO Audit Platform" }],
   icons: {

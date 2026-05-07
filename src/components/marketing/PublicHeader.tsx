@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, LogOut, Menu, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,15 +44,16 @@ const loggedInLinks = [
 const auditModules = [
   { label: 'Technical SEO Audit', href: '/technical-seo-audit' },
   { label: 'SEO Audit Tool', href: '/seo-audit-tool' },
-  { label: 'On-Page & Content', href: '/seo-audit-tool' },
+  { label: 'On-Page & Content', href: '/on-page-content' },
   { label: 'CRO Analysis', href: '/cro-audit' },
   { label: 'Local SEO Audit', href: '/local-seo-audit' },
-  { label: 'Schema Markup', href: '/seo-audit-tool' },
+  { label: 'Schema Markup', href: '/schema-markup' },
 ];
 
 const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
 
 export function PublicHeader() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -121,10 +123,8 @@ export function PublicHeader() {
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuSeparator />
               {auditModules.map((module) => (
-                <DropdownMenuItem key={module.href} asChild>
-                  <Link href={module.href} className="w-full">
-                    {module.label}
-                  </Link>
+                <DropdownMenuItem key={module.href} onSelect={() => router.push(module.href)} className="cursor-pointer">
+                  {module.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

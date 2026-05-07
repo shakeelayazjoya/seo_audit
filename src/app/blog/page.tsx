@@ -1,55 +1,104 @@
 import Link from 'next/link';
-import { CalendarDays, User } from 'lucide-react';
+import { CalendarDays, User, ArrowRight } from 'lucide-react';
 import { listPublishedBlogs } from '@/lib/blog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default async function BlogPage() {
   const blogs = await listPublishedBlogs();
 
   return (
-    <main className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
-      <section className="border-b bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-orange-600">Blog</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">SEO audit insights</h1>
-          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">
+    <main className="min-h-screen bg-slate-950 text-white">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-white/8">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right,rgb(255,255,255) 1px,transparent 1px),linear-gradient(to bottom,rgb(255,255,255) 1px,transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        <div className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-orange-500/10 blur-[120px]" />
+
+        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6">
+          <span className="mb-4 inline-flex items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-orange-400">
+            Blog
+          </span>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">SEO audit insights</h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-400">
             Practical articles about technical SEO, performance, schema, AI search visibility, and turning audit findings into action.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      {/* Posts grid */}
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         {blogs.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {blogs.map((blog) => (
-              <Link key={blog.id} href={`/blog/${blog.slug}`} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div className="aspect-[16/10] bg-slate-100 dark:bg-slate-800">
+              <Link
+                key={blog.id}
+                href={`/blog/${blog.slug}`}
+                className="group overflow-hidden rounded-2xl border border-white/8 bg-slate-900 transition-all hover:-translate-y-0.5 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5"
+              >
+                <div className="aspect-[16/10] overflow-hidden bg-slate-800">
                   {blog.coverImageUrl ? (
-                    <img src={blog.coverImageUrl} alt={blog.title} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                    <img
+                      src={blog.coverImageUrl}
+                      alt={blog.title}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-slate-400">SEO Audit</div>
+                    <div className="flex h-full items-center justify-center">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">SEO Audit</span>
+                    </div>
                   )}
                 </div>
                 <div className="p-5">
-                  <div className="mb-3 flex flex-wrap gap-2">
+                  <div className="mb-3 flex flex-wrap gap-1.5">
                     {blog.categories.slice(0, 2).map((category) => (
-                      <Badge key={category} variant="secondary">{category}</Badge>
+                      <span
+                        key={category}
+                        className="inline-flex rounded-full border border-orange-500/20 bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-orange-400"
+                      >
+                        {category}
+                      </span>
                     ))}
                   </div>
-                  <h2 className="text-lg font-semibold leading-snug group-hover:text-orange-600">{blog.title}</h2>
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{blog.excerpt}</p>
-                  <div className="mt-5 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center gap-1"><CalendarDays className="size-3.5" /> {new Date(blog.publishedAt ?? blog.createdAt).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-1"><User className="size-3.5" /> {blog.author?.name ?? 'SEO Team'}</span>
+                  <h2 className="text-base font-semibold leading-snug text-white transition-colors group-hover:text-orange-400">
+                    {blog.title}
+                  </h2>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">{blog.excerpt}</p>
+                  <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <CalendarDays className="size-3" />
+                      {new Date(blog.publishedAt ?? blog.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <User className="size-3" />
+                      {blog.author?.name ?? 'SEO Team'}
+                    </span>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed bg-slate-50 p-10 text-center dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="text-xl font-semibold">No posts published yet</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Published admin posts will appear here automatically.</p>
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-900 py-20 text-center">
+            <p className="text-lg font-semibold">No posts published yet</p>
+            <p className="mt-2 max-w-xs text-sm text-slate-400">
+              Published admin posts will appear here automatically.
+            </p>
+            <Button
+              asChild
+              className="mt-6 gap-2 bg-orange-500 text-white hover:bg-orange-400"
+            >
+              <Link href="/">
+                Run free audit
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </div>
         )}
       </section>
