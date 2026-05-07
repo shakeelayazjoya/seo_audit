@@ -1,0 +1,24 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FB8C00"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1F2937"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" rx="80" fill="url(#bg)"/>
+  <circle cx="400" cy="290" r="150" fill="#FFF" opacity="0.18"/>
+  <circle cx="400" cy="300" r="120" fill="#F8FAFC"/>
+  <path d="M280 520C280 455 320 420 400 420C480 420 520 455 520 520V560H280V520Z" fill="#F8FAFC"/>
+  <path d="M330 290C330 240 365 200 400 200C435 200 470 240 470 290C470 340 435 360 400 360C365 360 330 340 330 290Z" fill="url(#hair)"/>
+  <path d="M340 360C340 340 360 330 400 330C440 330 460 340 460 360V400H340V360Z" fill="#E2E8F0"/>
+  <path d="M360 225C360 210 370 200 400 200C430 200 440 210 440 225V255H360V225Z" fill="#111827" opacity="0.85"/>
+  <path d="M375 285C375 292.732 369.732 298 362 298C354.268 298 349 292.732 349 285C349 277.268 354.268 272 362 272C369.732 272 375 277.268 375 285Z" fill="#0F172A"/>
+  <path d="M451 285C451 292.732 445.732 298 438 298C430.268 298 425 292.732 425 285C425 277.268 430.268 272 438 272C445.732 272 451 277.268 451 285Z" fill="#0F172A"/>
+  <path d="M360 340C365 348 375 352 392 352C409 352 419 348 424 340" stroke="#0F172A" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="400" cy="650" r="90" fill="#0F172A" opacity="0.08"/>
+  <text x="400" y="680" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="120" font-weight="700">TA</text>
+</svg>

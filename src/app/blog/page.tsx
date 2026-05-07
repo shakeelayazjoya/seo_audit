@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { CalendarDays, User } from 'lucide-react';
 import { listPublishedBlogs } from '@/lib/blog';
-import { PublicHeader } from '@/components/marketing/PublicHeader';
 import { Badge } from '@/components/ui/badge';
 
 export default async function BlogPage() {
@@ -9,8 +8,6 @@ export default async function BlogPage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
-      <PublicHeader />
-
       <section className="border-b bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-orange-600">Blog</p>

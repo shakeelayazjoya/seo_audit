@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CalendarDays, ChevronRight, LogOut, Menu, User, X } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronRight, LogOut, Menu, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -38,6 +38,15 @@ const loggedInLinks = [
   { label: 'Dashboard', href: '/' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' },
+];
+
+const auditModules = [
+  { label: 'Technical SEO Audit', href: '/technical-seo-audit' },
+  { label: 'SEO Audit Tool', href: '/seo-audit-tool' },
+  { label: 'On-Page & Content', href: '/seo-audit-tool' },
+  { label: 'CRO Analysis', href: '/cro-audit' },
+  { label: 'Local SEO Audit', href: '/local-seo-audit' },
+  { label: 'Schema Markup', href: '/seo-audit-tool' },
 ];
 
 const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
@@ -82,13 +91,13 @@ export function PublicHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center">
           <img
-            src="/all-in-one-seo-audit-logo.jpeg"
+            src="/all-in-one-seo-audit-logo.png"
             alt="All In One SEO Audit Tool"
-            className="h-24 w-auto max-w-[3500px] object-contain sm:h-18 sm:max-w-[260px] md:h-24 md:max-w-[320px]"
+            className="h-16 w-auto max-w-[350px] object-contain sm:h-16 sm:max-w-[260px] md:h-16 md:max-w-[320px]"
           />
         </Link>
 
@@ -97,18 +106,36 @@ export function PublicHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-white/10 hover:text-white"
             >
               {link.label}
             </Link>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="ghost" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-white/10 hover:text-white">
+                Audit Modules
+                <ChevronDown className="ml-2 size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuSeparator />
+              {auditModules.map((module) => (
+                <DropdownMenuItem key={module.href} asChild>
+                  <Link href={module.href} className="w-full">
+                    {module.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {!user && sessionChecked && (
             <>
-              <div className="mx-2 h-5 w-px bg-slate-200 dark:bg-slate-800" />
-              <Link href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+              <div className="mx-2 h-5 w-px bg-white/10" />
+              <Link href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-white/10 hover:text-white">
                 Login
               </Link>
-              <Link href="/signup" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white">
+              <Link href="/signup" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-white/10 hover:text-white">
                 Sign Up
               </Link>
             </>
@@ -154,7 +181,7 @@ export function PublicHeader() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
+        <div className="border-t border-white/10 bg-slate-950/95 px-4 py-4 md:hidden">
           <div className="mx-auto max-w-6xl space-y-1">
             {user && (
               <div className="mb-3 rounded-xl border bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
@@ -167,20 +194,31 @@ export function PublicHeader() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
+                className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-white"
               >
                 {link.label}
-                <ChevronRight className="ml-auto size-3.5 text-slate-400" />
+                <ChevronRight className="ml-auto size-3.5 text-slate-300" />
+              </Link>
+            ))}
+            <div className="mt-2 rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-100">Audit Modules</div>
+            {auditModules.map((module) => (
+              <Link
+                key={module.href}
+                href={module.href}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center rounded-lg px-4 py-2.5 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-white"
+              >
+                {module.label}
               </Link>
             ))}
             {!user && sessionChecked && (
               <>
-                <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-900">
-                  Login <ChevronRight className="ml-auto size-3.5 text-slate-400" />
+                <div className="my-2 h-px bg-white/10" />
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-white">
+                  Login <ChevronRight className="ml-auto size-3.5 text-slate-300" />
                 </Link>
-                <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-900">
-                  Sign Up <ChevronRight className="ml-auto size-3.5 text-slate-400" />
+                <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-100 hover:bg-white/10 hover:text-white">
+                  Sign Up <ChevronRight className="ml-auto size-3.5 text-slate-300" />
                 </Link>
               </>
             )}

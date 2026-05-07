@@ -3,7 +3,6 @@ import { ArrowRight, CheckCircle2, Search, Shield, Zap, Sparkles } from 'lucide-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PublicHeader } from '@/components/marketing/PublicHeader';
 
 interface ProposalLandingPageProps {
   eyebrow: string;
@@ -24,7 +23,6 @@ export function ProposalLandingPage({
 }: ProposalLandingPageProps) {
   return (
     <div className="min-h-screen bg-background">
-      <PublicHeader />
       <section className="border-b bg-gradient-to-b from-muted/60 via-background to-background">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
           <Badge variant="outline" className="mb-4">

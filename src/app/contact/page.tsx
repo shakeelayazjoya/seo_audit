@@ -1,11 +1,8 @@
-import { PublicHeader } from '@/components/marketing/PublicHeader';
 import { ContactSection } from '@/components/seo/ContactSection';
 
 export default function ContactPage() {
   return (
     <main className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
-      <PublicHeader />
-
       <section className="border-b bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-orange-600">Contact</p>

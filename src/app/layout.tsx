@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { MarketingShell } from '@/components/marketing/MarketingShell';
 
 export const metadata: Metadata = {
   title: "SEO Audit Platform — Free Website SEO Analysis Tool",
@@ -65,7 +66,7 @@ export default function RootLayout({
         }
         className="antialiased bg-background text-foreground"
       >
-        {children}
+        <MarketingShell>{children}</MarketingShell>
         <Toaster />
       </body>
     </html>

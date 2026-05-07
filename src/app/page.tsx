@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Search,
   BarChart3,
@@ -14,12 +14,9 @@ import {
   Loader2,
   FileText,
   Phone,
+  User,
   Users,
   Sparkles,
-  Menu,
-  X,
-  LogOut,
-  User,
   TrendingUp,
   Award,
   ChevronRight,
@@ -29,14 +26,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Accordion,
   AccordionContent,
@@ -49,7 +38,7 @@ import { LoginPromptModal } from '@/components/seo/LoginPromptModal';
 import { ContactSection } from '@/components/seo/ContactSection';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
-import { getSupportEmail, getSupportWhatsappUrl } from '@/lib/support';
+import { getSupportWhatsappUrl } from '@/lib/support';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function readInitialSearchParams() {
@@ -205,18 +194,29 @@ const GlobalStyles = () => (
     .testimonial-card {
       position: relative;
       overflow: hidden;
+      background: linear-gradient(135deg, rgba(251,146,60,0.12), rgba(254,241,199,0.18));
+      border-color: rgba(251,146,60,0.22);
+      box-shadow: 0 24px 54px rgba(251,146,60,0.08);
     }
     .testimonial-card::before {
       content: '"';
       font-family: var(--font-display);
       position: absolute;
-      top: -12px;
-      left: 16px;
+      top: -10px;
+      left: 18px;
       font-size: 80px;
-      color: hsl(var(--primary) / 0.08);
+      color: rgba(251,146,60,0.16);
       font-weight: 800;
       line-height: 1;
       pointer-events: none;
+      transform: rotate(-12deg);
+    }
+    .testimonial-carousel {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .testimonial-carousel::-webkit-scrollbar {
+      display: none;
     }
   `}</style>
 );
@@ -231,219 +231,6 @@ interface SessionUser {
   role?: string | null;
 }
 
-function Header({
-  onScrollTo,
-  user,
-  onLogout,
-  loggingOut,
-}: {
-  onScrollTo: (id: string) => void;
-  user: SessionUser | null;
-  onLogout: () => Promise<void>;
-  loggingOut: boolean;
-}) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
-  }, []);
-
-  const loggedOutLinks = [
-    { label: 'Features', href: '/features' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'About', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'FAQ', href: '/faq' },
-  ];
-  const loggedInLinks = [
-    { label: 'Features', href: '/features' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'About', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Audit History', href: '/history' },
-    { label: 'Dashboard', href: '#dashboard' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Contact', href: '/contact' },
-  ];
-  const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
-  const navLinks = user ? loggedInLinks : loggedOutLinks;
-  const displayName = user?.name?.trim() || user?.email || 'Account';
-  const isAdmin = user?.role === 'admin';
-
-  return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'border-b border-white/10 bg-black/95 shadow-2xl shadow-black/30 backdrop-blur-xl'
-          : 'border-b border-white/10 bg-black/90 backdrop-blur-xl'
-      }`}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <img
-            src="/all-in-one-seo-audit-logo.jpeg"
-            alt="All In One SEO Audit Tool"
-            className="h-24 w-auto max-w-[3500px] object-contain sm:h-18 sm:max-w-[260px] md:h-24 md:max-w-[320px]"
-          />
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {isAdmin ? (
-            <Link href="/admin" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
-              Admin
-            </Link>
-          ) : (
-            <>
-              {navLinks.map((l) => (
-                l.href === '#dashboard' ? (
-                  <button key={l.href} onClick={() => onScrollTo('hero')} className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
-                    {l.label}
-                  </button>
-                ) : (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
-                >
-                  {l.label}
-                </Link>
-                )
-              ))}
-            </>
-          )}
-
-          {!user && (
-            <>
-              <div className="w-px h-5 bg-white/15 mx-2" />
-              <Link href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
-                Login
-              </Link>
-              <Link href="/signup" className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white">
-                Sign Up
-              </Link>
-            </>
-          )}
-
-          <Button asChild size="sm" className="ml-2 h-9 rounded-xl bg-white px-4 text-black shadow-sm hover:bg-orange-50">
-            <a href={bookingUrl} target="_blank" rel="noreferrer">
-              <Phone className="size-3.5" />
-              Book Call
-            </a>
-          </Button>
-
-          {user && (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="ml-1 rounded-full border-white/20 bg-white/10 text-white hover:bg-white/20" aria-label="Open profile menu">
-                    <User className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel>
-                    <span className="block truncate text-sm font-semibold">{displayName}</span>
-                    <span className="block truncate text-xs font-normal text-muted-foreground">{user.email}</span>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => void onLogout()} disabled={loggingOut} className="cursor-pointer">
-                    <LogOut className="size-4" />
-                    {loggingOut ? 'Signing out...' : 'Logout'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          )}
-        </nav>
-
-        {/* Mobile toggle */}
-        <Button variant="ghost" size="icon" className="rounded-xl text-white hover:bg-white/10 hover:text-white md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-        </Button>
-      </div>
-
-      {/* Mobile nav */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="overflow-hidden border-t border-white/10 bg-black/98 text-white md:hidden"
-          >
-            <div className="px-4 py-5 space-y-1">
-              {user && (
-                <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                  <div className="flex size-8 items-center justify-center rounded-full bg-orange-500/20">
-                    <User className="size-4 text-orange-300" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate">{displayName}</p>
-                    <p className="text-xs text-slate-400">{user.email}</p>
-                  </div>
-                </div>
-              )}
-              {!isAdmin && (
-                <>
-                  <div className="my-2 h-px bg-white/10" />
-                  {navLinks.map((l) => (
-                    l.href === '#dashboard' ? (
-                      <button key={l.href} onClick={() => { onScrollTo('hero'); setMobileOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white">
-                        {l.label}
-                      </button>
-                    ) : (
-                      <Link
-                        key={l.href}
-                        href={l.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
-                      >
-                        {l.label}
-                      </Link>
-                    )
-                  ))}
-                  {!user && (
-                    <>
-                      <div className="my-2 h-px bg-white/10" />
-                      <Link href="/login" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10">
-                        Login <ChevronRight className="ml-auto size-3.5 text-slate-400" />
-                      </Link>
-                      <Link href="/signup" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-white/10">
-                        Sign Up <ChevronRight className="ml-auto size-3.5 text-slate-400" />
-                      </Link>
-                    </>
-                  )}
-                  <div className="pt-2">
-                    <Button asChild size="sm" className="w-full rounded-xl bg-white text-black hover:bg-orange-50">
-                      <a href={bookingUrl} target="_blank" rel="noreferrer" onClick={() => setMobileOpen(false)}>
-                        <Phone className="size-3.5 mr-1.5" />
-                        Book Call
-                      </a>
-                    </Button>
-                  </div>
-                  {user && (
-                    <Button variant="outline" size="sm" className="w-full rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white" onClick={() => { setMobileOpen(false); void onLogout(); }} disabled={loggingOut}>
-                      <LogOut className="size-3.5 mr-1.5" />
-                      {loggingOut ? 'Signing out...' : 'Logout'}
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
-
-// ============================================================
 // Landing Page
 // ============================================================
 function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string) => void }) {
@@ -495,7 +282,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
           setPastAudits(mapped);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [sessionUser]);
 
   const handleLogout = useCallback(async () => {
@@ -596,10 +383,59 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   ];
 
   const testimonials = [
-    { name: 'Sarah Chen', role: 'Marketing Director, SaaS Company', text: 'Increased our organic traffic by 143% in 3 months by following the prioritized action plan.', stars: 5 },
-    { name: 'Marcus Rivera', role: 'E-commerce Owner', text: 'The Quick Wins feature alone helped us fix 12 critical issues in a single afternoon.', stars: 5 },
+    { name: 'Sarah Chen', role: 'Marketing Director, SaaS Company', text: 'Working with Taqweem has been a pleasure. He and his team are thoughtful and responsive about how they develop sites. Communication is continuous, and he listens intently. He is comfortable offering suggestions that enhance your ideas without increasing cost. ', stars: 5 },
+    { name: 'Marcus Rivera', role: 'E-commerce Owner', text: 'Ive been working with this team for about a year now. Every time I do a project they are responsive, respectful and deliver high quality work. I would recommend them to anyone needing their services.', stars: 5 },
     { name: 'Emma Larsson', role: 'SEO Consultant', text: 'I run audits for every client through this platform. The reports save me hours of work every week.', stars: 5 },
+    { name: 'Priya Patel', role: 'Growth Lead, Fintech', text: 'The visual roadmap made it easy to align our team around the highest-impact SEO fixes.', stars: 5 },
+    { name: 'Jordan Blake', role: 'Founder, SaaS Startup', text: 'I got a result that far exceeded my expectations, and I want to thank the team very much. They worked meticulously and understood our needs, delivering exactly what we wanted. I definitely recommend them.					', stars: 5 },
+    { name: 'Lena Kim', role: 'Content Strategist', text: 'Fast, actionable insights with an attractive dashboard that makes follow-up simple.', stars: 5 },
   ];
+
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(4);
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      if (!carouselRef.current) return;
+      const card = carouselRef.current.querySelector<HTMLElement>('.testimonial-card-wrapper');
+      if (!card) return;
+      const gap = 20;
+      const visible = Math.max(1, Math.floor(carouselRef.current.clientWidth / (card.offsetWidth + gap)));
+      setVisibleCount(Math.min(4, visible));
+    };
+
+    updateVisibleCount();
+    window.addEventListener('resize', updateVisibleCount);
+    return () => window.removeEventListener('resize', updateVisibleCount);
+  }, []);
+
+  useEffect(() => {
+    const node = carouselRef.current;
+    if (!node) return;
+
+    const handleScroll = () => {
+      const card = node.querySelector<HTMLElement>('.testimonial-card-wrapper');
+      if (!card) return;
+      const gap = 20;
+      const index = Math.round(node.scrollLeft / (card.offsetWidth + gap));
+      setCarouselIndex(Math.max(0, Math.min(index, testimonials.length - visibleCount)));
+    };
+
+    node.addEventListener('scroll', handleScroll, { passive: true });
+    return () => node.removeEventListener('scroll', handleScroll);
+  }, [visibleCount, testimonials.length]);
+
+  const advanceTestimonials = (direction: number) => {
+    if (!carouselRef.current) return;
+    const card = carouselRef.current.querySelector<HTMLElement>('.testimonial-card-wrapper');
+    if (!card) return;
+    const gap = 20;
+    const targetIndex = Math.max(0, Math.min(testimonials.length - visibleCount, carouselIndex + direction));
+    const offset = targetIndex * (card.offsetWidth + gap);
+    carouselRef.current.scrollTo({ left: offset, behavior: 'smooth' });
+    setCarouselIndex(targetIndex);
+  };
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
@@ -612,7 +448,6 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   }, 0);
 
   const checkoutStatus = searchParams.get('checkout');
-  const supportEmail = getSupportEmail();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -626,8 +461,6 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   return (
     <div className="min-h-screen flex flex-col">
       <GlobalStyles />
-      <Header onScrollTo={scrollTo} user={sessionUser} onLogout={handleLogout} loggingOut={loggingOut} />
-
       {/* Checkout banner */}
       {checkoutStatus && (
         <motion.section initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="border-b bg-muted/40">
@@ -673,16 +506,16 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
               style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.1 }}
               className="text-4xl sm:text-6xl mb-4"
             >
-              Analyze Your SEO in{' '}
+              Your Website Has Hidden Issues Costing You Traffic.{' '}
               <span className="relative inline-block">
-                <span className="text-orange-200">60 Seconds</span>
+                <span className="text-orange-200">Find Them in 60 Seconds.</span>
                 <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-300/80 to-orange-500/20 rounded-full" />
               </span>
             </motion.h1>
 
             <motion.p variants={itemVariants} className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Get a comprehensive SEO audit across 7 dimensions with prioritized action items,
-              quick wins, and a step-by-step fix guide — completely free.
+              Free all-in-one audit covering Technical SEO, CRO, Local SEO, AI Visibility, Core Web Vitals, and Schema. No credit card required.
+
             </motion.p>
 
             {/* Search form */}
@@ -723,14 +556,14 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                   style={{ height: '52px' }}
                 >
                   <Search className="size-4" />
-                  Free Audit
+                  Run Free Audit Now
                 </Button>
               </div>
             </motion.form>
 
             {/* Trust badges */}
             <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center gap-3 mt-2">
-              {['URL + email required', 'Preview PDF emailed automatically', '7 SEO modules', 'Full report after login'].map((text) => (
+              {['URL + email required', 'Preview PDF emailed automatically', ' 2,000 plus audits completed',"No credit card required", 'Full report after login'].map((text) => (
                 <span key={text} className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-xs text-slate-300 backdrop-blur">
                   <CheckCircle2 className="size-3 text-emerald-300" />
                   {text}
@@ -739,7 +572,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             </motion.div>
 
             {/* Stats */}
-            <motion.div variants={itemVariants} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
+            {/* <motion.div variants={itemVariants} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
               {[
                 { value: auditCount > 0 ? auditCount.toLocaleString() : '0', label: 'Audits Stored', icon: <BarChart3 className="size-4" /> },
                 { value: '7', label: 'SEO Modules', icon: <Shield className="size-4" /> },
@@ -754,49 +587,80 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                   <div className="text-xs text-slate-400 mt-0.5">{stat.label}</div>
                 </div>
               ))}
-            </motion.div>
+            </motion.div> */}
           </motion.div>
         </div>
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" className="max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
+      <section
+        id="features"
+        className="relative max-w-6xl mx-auto px-4 sm:px-6 py-24 overflow-hidden"
+      >
+        {/* Soft Background Glow */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-[#3AE7AF]/10 blur-[120px] rounded-full" />
+          <div className="absolute bottom-[-120px] right-[-80px] w-[300px] h-[300px] bg-purple-400/10 blur-[120px] rounded-full" />
+        </div>
+
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="text-center mb-14"
         >
-          <Badge variant="outline" className="mb-3 px-4 py-1.5 rounded-full text-xs font-medium">Comprehensive Analysis</Badge>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.025em' }} className="text-3xl sm:text-4xl mb-3">
+          <Badge className="mb-4 px-5 py-2 rounded-full text-xs font-semibold bg-[#3AE7AF]/20 text-[#1f2937]">
+            Comprehensive Analysis
+          </Badge>
+
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 800,
+              letterSpacing: '-0.025em',
+            }}
+            className="text-3xl sm:text-5xl mb-4 text-gray-900"
+          >
             Everything You Need to Rank Higher
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Our audit covers 7 critical SEO dimensions with actionable insights and prioritized recommendations
+
+          <p className="text-gray-600 max-w-xl mx-auto leading-relaxed text-sm sm:text-base">
+            Our audit covers 7 critical SEO dimensions with actionable insights and
+            prioritized recommendations
           </p>
         </motion.div>
 
-        {/* Module weight pills */}
+        {/* Module Pills */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex flex-wrap items-center justify-center gap-2 mb-10"
+          className="flex flex-wrap items-center justify-center gap-3 mb-14"
         >
           {(Object.keys(MODULE_CONFIG) as ModuleKey[]).map((key) => (
-            <div key={key} className="flex items-center gap-2 rounded-full border border-border/60 bg-background px-3.5 py-2 text-xs shadow-sm hover:border-border hover:shadow transition-all badge-module">
-              <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: MODULE_CONFIG[key].color }} />
-              <span className="font-medium">{MODULE_CONFIG[key].label}</span>
-              <span className="text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
+            <div
+              key={key}
+              className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs shadow-sm hover:shadow-md hover:scale-[1.05] transition-all duration-300"
+            >
+              <span
+                className="size-2 rounded-full shrink-0"
+                style={{ backgroundColor: MODULE_CONFIG[key].color }}
+              />
+              <span className="font-medium text-gray-800">
+                {MODULE_CONFIG[key].label}
+              </span>
+              <span className="text-[10px] font-semibold bg-gray-100 px-2 py-0.5 rounded-full text-gray-600">
                 {MODULE_CONFIG[key].weight}%
               </span>
             </div>
           ))}
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, idx) => (
             <motion.div
               key={feature.title}
@@ -805,14 +669,33 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
               viewport={{ once: true }}
               transition={{ delay: idx * 0.07, duration: 0.45 }}
             >
-              <Card className="card-premium h-full border border-border/60 bg-background/60 backdrop-blur-sm py-0 gap-0">
-                <CardContent className="flex items-start gap-4 p-6">
-                  <div className={`p-3 rounded-2xl ${feature.bg} ${feature.color} shrink-0`}>
+              <Card className="group relative h-full border border-gray-200 bg-white rounded-2xl overflow-hidden hover:border-[#3AE7AF]/40 hover:shadow-lg transition-all duration-300">
+
+                {/* Hover Glow */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 bg-[#3AE7AF]/5" />
+
+                <CardContent className="flex items-start gap-4 p-6 relative z-10">
+                  {/* Icon */}
+                  <div
+                    className={`p-3 rounded-xl ${feature.bg} ${feature.color} shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300`}
+                  >
                     {feature.icon}
                   </div>
+
+                  {/* Text */}
                   <div>
-                    <h3 className="font-semibold text-sm mb-1.5" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{feature.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{feature.desc}</p>
+                    <h3
+                      className="font-semibold text-sm mb-2 text-gray-900"
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        letterSpacing: '-0.01em',
+                      }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      {feature.desc}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -822,50 +705,65 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="relative overflow-hidden bg-muted/30 border-y">
-        <div className="absolute inset-0 hero-grid opacity-40" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 to-background/60" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
+      <section className="relative overflow-hidden bg-white border-y border-slate-200 text-slate-900">
+        <div className="pointer-events-none absolute -top-16 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-orange-200/20 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-60 w-60 rounded-full bg-cyan-200/20 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(253,186,116,0.12),transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.1),transparent_25%)]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-14"
+            className="mx-auto max-w-2xl text-center mb-16"
           >
-            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.025em' }} className="text-3xl sm:text-4xl mb-3">
-              How It Works
+            <Badge variant="secondary" className="mb-4 px-4 py-2 rounded-full bg-slate-900 text-white border border-slate-200">
+              Workflow Reimagined
+            </Badge>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, letterSpacing: '-0.025em' }} className="text-3xl sm:text-4xl mb-4 text-slate-950">
+              A fresh way to audit, act, and win
             </h2>
-            <p className="text-muted-foreground">Three simple steps to improve your SEO</p>
+            <p className="text-slate-600">
+              A modern 3-step journey optimized for speed, clarity, and measurable SEO growth.
+            </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {[
-              { step: '01', title: 'Enter Your Domain', desc: 'Type in any website URL. No signup, no credit card, no commitment required.', icon: <Globe className="size-6" />, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-              { step: '02', title: 'Get Your Audit', desc: 'Our engine analyzes up to 300 pages across 7 SEO modules in under 60 seconds.', icon: <BarChart3 className="size-6" />, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-              { step: '03', title: 'Fix & Improve', desc: 'Follow prioritized recommendations. Start with Quick Wins for immediate results.', icon: <Zap className="size-6" />, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              { step: '01', title: 'Enter Your Domain', desc: 'Paste your website URL and get started instantly. No signup required to preview your audit.', icon: <Globe className="size-6" />, color: 'text-blue-600', bg: 'bg-blue-100', accent: 'from-blue-500 to-sky-500' },
+              { step: '02', title: 'See Instant Insights', desc: 'Our engine analyzes up to 300 pages, surface high-impact issues, and prioritize what matters first.', icon: <BarChart3 className="size-6" />, color: 'text-violet-600', bg: 'bg-violet-100', accent: 'from-violet-500 to-fuchsia-500' },
+              { step: '03', title: 'Fix With Confidence', desc: 'Get clear next steps, Quick Wins, and a roadmap that turns audit findings into real SEO gains.', icon: <Zap className="size-6" />, color: 'text-emerald-600', bg: 'bg-emerald-100', accent: 'from-emerald-500 to-teal-500' },
             ].map((item, idx) => (
               <motion.div
                 key={item.step}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.15, duration: 0.5 }}
-                className="relative text-center group"
+                transition={{ delay: idx * 0.12, duration: 0.45 }}
+                className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-slate-50 p-8 shadow-lg shadow-slate-200/40 transition-transform duration-300 hover:-translate-y-1"
               >
-                {/* Connector line (desktop) */}
-                {idx < 2 && (
-                  <div className="hidden md:block absolute top-9 left-[calc(50%+40px)] right-[calc(-50%+40px)] h-px bg-gradient-to-r from-border to-border/20 z-10" />
-                )}
-                <div className="relative inline-flex">
-                  <div className={`size-18 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center mb-5 mx-auto transition-transform group-hover:scale-110 duration-300`} style={{ width: '72px', height: '72px' }}>
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-slate-900 via-slate-500 to-slate-400 opacity-80" />
+                <div className="relative z-10 flex items-start gap-4">
+                  <div className={`size-14 grid place-items-center rounded-[26px] ${item.bg} ${item.color} ring-1 ring-slate-200 shadow-sm`}>
                     {item.icon}
                   </div>
-                  <div className="absolute -top-2 -right-2 size-7 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center shadow-sm" style={{ fontFamily: 'var(--font-display)' }}>
-                    {item.step}
+                  <div>
+                    <span className="text-xs uppercase tracking-[0.3em] text-slate-500">Step {item.step}</span>
+                    <h3 className="mt-3 text-2xl font-semibold text-slate-950" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
+                      {item.title}
+                    </h3>
                   </div>
                 </div>
-                <h3 className="font-semibold text-base mb-2" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">{item.desc}</p>
+                <p className="relative z-10 mt-6 text-sm leading-relaxed text-slate-600">
+                  {item.desc}
+                </p>
+                <div className="relative z-10 mt-8 flex flex-wrap gap-2">
+                  {['Fast', 'Clear', 'Actionable'].map((tag) => (
+                    <span key={tag} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-slate-600 shadow-sm">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="pointer-events-none absolute -right-10 top-12 h-28 w-28 rounded-full bg-slate-100 blur-2xl" />
               </motion.div>
             ))}
           </div>
@@ -899,11 +797,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
               transition={{ delay: idx * 0.1, duration: 0.45 }}
               className={plan.popular ? 'md:-mt-3 md:mb-3' : ''}
             >
-              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${
-                plan.popular
-                  ? 'border-orange-300/40 bg-white text-slate-950 shadow-2xl shadow-orange-950/30'
-                  : 'border-white/10 bg-white/[0.06] text-white shadow-xl shadow-black/20 backdrop-blur'
-              }`}>
+              <Card className={`relative h-full flex flex-col py-0 gap-0 card-premium overflow-hidden ${plan.popular
+                ? 'border-orange-300/40 bg-white text-slate-950 shadow-2xl shadow-orange-950/30'
+                : 'border-white/10 bg-white/[0.06] text-white shadow-xl shadow-black/20 backdrop-blur'
+                }`}>
                 {plan.popular && (
                   <>
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-300 via-orange-500 to-orange-300" />
@@ -937,11 +834,10 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 </CardContent>
                 <CardFooter className="px-6 pb-6 pt-4">
                   <Button
-                    className={`w-full rounded-xl font-semibold gap-2 transition-all ${
-                      plan.popular
-                        ? 'bg-orange-500 text-white shadow-md hover:bg-orange-400 hover:shadow-lg'
-                        : 'border-white/15 bg-white/10 text-white hover:bg-white hover:text-black'
-                    }`}
+                    className={`w-full rounded-xl font-semibold gap-2 transition-all ${plan.popular
+                      ? 'bg-orange-500 text-white shadow-md hover:bg-orange-400 hover:shadow-lg'
+                      : 'border-white/15 bg-white/10 text-white hover:bg-white hover:text-black'
+                      }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => plan.name === 'Free Plan' ? scrollTo('hero') : startCommercialFlow(plan.name === 'Strategy Plan' ? 'strategy' : 'diy')}
                     disabled={!!commerceLoading}
@@ -961,7 +857,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       {/* ── TESTIMONIALS ── */}
       <section className="relative bg-muted/30 border-y overflow-hidden">
         <div className="absolute inset-0 hero-grid opacity-30" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-24">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -974,36 +870,65 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             <p className="text-muted-foreground">See how others have improved their search rankings</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {testimonials.map((t, idx) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.45 }}
+          <div className="relative pt-5">
+            <div className="overflow-hidden pt-6">
+              <div
+                ref={carouselRef}
+                className="flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory touch-pan-x scroll-smooth testimonial-carousel"
               >
-                <Card className="card-premium h-full py-0 gap-0 border-border/60 testimonial-card">
-                  <CardContent className="p-6">
-                    <div className="flex gap-0.5 mb-4">
-                      {Array.from({ length: t.stars }).map((_, i) => (
-                        <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className="text-sm leading-relaxed text-foreground/80 mb-5 italic">"{t.text}"</p>
-                    <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0" style={{ fontFamily: 'var(--font-display)' }}>
-                        {t.name[0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{t.name}</p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                {testimonials.map((t, idx) => (
+                  <motion.div
+                    key={t.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.08, duration: 0.45 }}
+                    className="testimonial-card-wrapper snap-start flex-shrink-0 w-[90%] sm:w-[48%] lg:w-[31%] xl:w-[23%]"
+                  >
+                    <Card className="card-premium relative h-full py-0 gap-0 overflow-hidden border border-orange-200/70 bg-gradient-to-br from-orange-100 via-orange-50 to-white testimonial-card">
+                      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
+                      <CardContent className="p-6 pt-8">
+                        <div className="flex gap-0.5 mb-4">
+                          {Array.from({ length: t.stars }).map((_, i) => (
+                            <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-700 mb-5 italic">"{t.text}"</p>
+                        <div className="flex items-center gap-3">
+                          <div className="size-10 rounded-full bg-gradient-to-br from-orange-300 to-orange-200 flex items-center justify-center text-orange-900 font-bold text-sm shrink-0" style={{ fontFamily: 'var(--font-display)' }}>
+                            {t.name[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{t.name}</p>
+                            <p className="text-xs text-slate-500">{t.role}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                className="h-11 w-11 rounded-full border border-orange-300/40 bg-white/10 text-orange-700 shadow-sm shadow-black/5 hover:bg-orange-50"
+                onClick={() => advanceTestimonials(-1)}
+                disabled={carouselIndex <= 0}
+                aria-label="Previous testimonials"
+              >
+                <ChevronRight className="size-4 rotate-180" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 w-11 rounded-full border border-orange-300/40 bg-white/10 text-orange-700 shadow-sm shadow-black/5 hover:bg-orange-50"
+                onClick={() => advanceTestimonials(1)}
+                disabled={carouselIndex >= testimonials.length - visibleCount}
+                aria-label="Next testimonials"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -1085,7 +1010,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
       </section>
 
       {/* ── SPECIALIZED ROUTES ── */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
+      {/* <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1119,64 +1044,8 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
             ))}
           </div>
         </motion.div>
-      </section>
+      </section> */}
 
-      {/* ── FOOTER ── */}
-      <footer className="border-t border-white/10 bg-black text-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-            <div>
-              <img
-                src="/all-in-one-seo-audit-logo.jpeg"
-                alt="All In One SEO Audit Tool"
-                className="mb-4 h-14 w-auto max-w-[260px] sm:h-16 sm:max-w-[280px] md:h-18 md:max-w-[300px] object-contain"
-              />
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Professional SEO audit platform trusted by thousands of businesses worldwide. Get actionable insights to improve your search rankings.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Product</h4>
-              <ul className="space-y-2.5 text-xs text-slate-400">
-                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
-                {sessionUser && <li><Link href="/history" className="hover:text-white transition-colors">Audit History</Link></li>}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Audit Modules</h4>
-              <ul className="space-y-2.5 text-xs text-slate-400">
-                <li><Link href="/technical-seo-audit" className="hover:text-white transition-colors">Technical SEO</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">Core Web Vitals</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">On-Page & Content</Link></li>
-                <li><Link href="/cro-audit" className="hover:text-white transition-colors">CRO Analysis</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-4" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Growth Pages</h4>
-              <ul className="space-y-2.5 text-xs text-slate-400">
-                <li><Link href="/ai-seo-audit" className="hover:text-white transition-colors">AI SEO Audit</Link></li>
-                <li><Link href="/local-seo-audit" className="hover:text-white transition-colors">Local SEO Audit</Link></li>
-                <li><Link href="/seo-audit-tool" className="hover:text-white transition-colors">SEO Audit Tool</Link></li>
-                <li><a href={`mailto:${supportEmail}`} className="hover:text-white transition-colors">{supportEmail}</a></li>
-                {sessionUser && <li><Link href="/history" className="hover:text-white transition-colors">Domain Trends</Link></li>}
-              </ul>
-            </div>
-          </div>
-          <Separator className="mb-6 bg-white/10" />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <p>© 2025 SEO Audit Platform. All rights reserved.</p>
-            <div className="flex gap-5">
-              <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

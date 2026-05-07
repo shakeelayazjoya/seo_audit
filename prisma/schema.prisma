@@ -17,71 +17,71 @@ model User {
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   audits       Audit[]
-  sessions     Session[]
-  leads        Lead[]
-  requests     CommercialRequest[]
   blogPosts    BlogPost[]
+  requests     CommercialRequest[]
+  leads        Lead[]
+  sessions     Session[]
 }
 
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt    DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model Audit {
-  id            String              @id
-  domain        String
-  status        String              @default("queued")
-  overallScore  Int                 @default(0)
-  technical     String?
-  onPage        String?
-  performance   String?
-  cro           String?
-  localSeo      String?
-  aiSeo         String?
-  schema        String?
-  rawModules    String?
-  errorMessage  String?
-  isPartial     Boolean             @default(false)
-  partialReason String?
-  crawlPageCount Int                @default(0)
-  crawlErrorCount Int               @default(0)
-  userId        String?
-  user          User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
-  job           AuditJob?
-  requests      CommercialRequest[]
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  id              String              @id
+  domain          String
+  status          String              @default("queued")
+  overallScore    Int                 @default(0)
+  technical       String?
+  onPage          String?
+  performance     String?
+  cro             String?
+  localSeo        String?
+  aiSeo           String?
+  schema          String?
+  rawModules      String?
+  errorMessage    String?
+  isPartial       Boolean             @default(false)
+  partialReason   String?
+  crawlPageCount  Int                 @default(0)
+  crawlErrorCount Int                 @default(0)
+  userId          String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User?               @relation(fields: [userId], references: [id])
+  job             AuditJob?
+  requests        CommercialRequest[]
 
   @@index([domain, createdAt])
   @@index([status, createdAt])
 }
 
 model AuditJob {
-  id              String   @id @default(cuid())
-  auditId         String   @unique
-  audit           Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  auditId         String    @unique
   domain          String
-  status          String   @default("queued")
-  priority        Int      @default(0)
-  attempts        Int      @default(0)
-  maxAttempts     Int      @default(3)
+  status          String    @default("queued")
+  priority        Int       @default(0)
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
   workerId        String?
   lockedAt        DateTime?
   startedAt       DateTime?
   finishedAt      DateTime?
   lastHeartbeatAt DateTime?
   errorMessage    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  audit           Audit     @relation(fields: [auditId], references: [id], onDelete: Cascade)
 
   @@index([status, priority, createdAt])
   @@index([workerId])
@@ -93,10 +93,10 @@ model Lead {
   domain    String?
   auditId   String?
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   source    String   @default("pdf_gate")
   status    String   @default("captured")
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([email, createdAt])
 }
@@ -135,36 +135,36 @@ model CommercialRequest {
   email       String?
   domain      String?
   auditId     String?
-  audit       Audit?   @relation(fields: [auditId], references: [id], onDelete: SetNull)
   userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   externalId  String?
   externalUrl String?
   payload     Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  audit       Audit?   @relation(fields: [auditId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
 
   @@index([type, createdAt])
   @@index([provider, status, createdAt])
 }
 
 model BlogPost {
-  id              String    @id @default(cuid())
-  title           String
-  slug            String    @unique
-  excerpt         String
-  content         String
-  coverImageUrl   String?
+  id                 String    @id @default(cuid())
+  title              String
+  slug               String    @unique
+  excerpt            String
+  content            String
+  coverImageUrl      String?
   coverImagePublicId String?
-  categories      String[]  @default([])
-  tags            String[]  @default([])
-  metaDescription String?
-  status          String    @default("draft")
-  authorId        String?
-  author          User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  publishedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  categories         String[]  @default([])
+  tags               String[]  @default([])
+  metaDescription    String?
+  status             String    @default("draft")
+  authorId           String?
+  publishedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  author             User?     @relation(fields: [authorId], references: [id])
 
   @@index([status, publishedAt])
   @@index([createdAt])
