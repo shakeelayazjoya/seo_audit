@@ -383,11 +383,11 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
   ];
 
   const testimonials = [
-    { name: 'Sarah Chen', role: 'Marketing Director, SaaS Company', text: 'Working with Taqweem has been a pleasure. He and his team are thoughtful and responsive about how they develop sites. Communication is continuous, and he listens intently. He is comfortable offering suggestions that enhance your ideas without increasing cost. ', stars: 5 },
-    { name: 'Marcus Rivera', role: 'E-commerce Owner', text: 'Ive been working with this team for about a year now. Every time I do a project they are responsive, respectful and deliver high quality work. I would recommend them to anyone needing their services.', stars: 5 },
-    { name: 'Emma Larsson', role: 'SEO Consultant', text: 'I run audits for every client through this platform. The reports save me hours of work every week.', stars: 5 },
-    { name: 'Priya Patel', role: 'Growth Lead, Fintech', text: 'The visual roadmap made it easy to align our team around the highest-impact SEO fixes.', stars: 5 },
-    { name: 'Jordan Blake', role: 'Founder, SaaS Startup', text: 'I got a result that far exceeded my expectations, and I want to thank the team very much. They worked meticulously and understood our needs, delivering exactly what we wanted. I definitely recommend them.					', stars: 5 },
+    { name: 'Tim Simon', role: 'Simons Group LLC', text: 'Working with Taqweem has been a pleasure. He and his team are thoughtful and responsive about how they develop sites. Communication is continuous, and he listens intently. He is comfortable offering suggestions that enhance your ideas without increasing cost. ', stars: 5 },
+    { name: 'Matts Mankse', role: '4BSF', text: 'Ive been working with this team for about a year now. Every time I do a project they are responsive, respectful and deliver high quality work. I would recommend them to anyone needing their services.', stars: 5 },
+    { name: 'Sky ', role: 'Legend Mover For You', text: 'Legend Movers 4 You Professional, responsive, and highly knowledgeable. Dexora explained everything clearly and delivered exactly what was promised. Because of the experience, we moved forward with ongoing SEO services', stars: 5 },
+    { name: 'Julie Slagt', role: 'Alpha Strategies Agency', text: 'Great experience from start to finish. The quality of the monthly local SEO, GEO, and AEO work is outstanding, and everything is handled with care and expertise. You can clearly tell they have strong knowledge of local search optimization. Communication is clear and professional, and they’re always responsive and helpful. I genuinely enjoy collaborating with them and appreciate their long-term, results-driven approach. Highly recommended excellent service and support!', stars: 5 },
+    { name: 'Mehmat', role: 'Capital Kitchen & Bath', text: 'I got a result that far exceeded my expectations, and I want to thank the team very much. They worked meticulously and understood our needs, delivering exactly what we wanted. I definitely recommend them.					', stars: 5 },
     { name: 'Lena Kim', role: 'Content Strategist', text: 'Fast, actionable insights with an attractive dashboard that makes follow-up simple.', stars: 5 },
   ];
 
@@ -898,13 +898,7 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                     <Card className="card-premium relative h-full py-0 gap-0 overflow-hidden border border-orange-200/70 bg-gradient-to-br from-orange-100 via-orange-50 to-white testimonial-card">
                       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500" />
                       <CardContent className="p-6 pt-8">
-                        <div className="flex gap-0.5 mb-4">
-                          {Array.from({ length: t.stars }).map((_, i) => (
-                            <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                        <p className="text-sm leading-relaxed text-slate-700 mb-5 italic">"{t.text}"</p>
-                        <div className="flex items-center gap-3">
+                         <div className="flex items-center gap-3">
                           <div className="size-10 rounded-full bg-gradient-to-br from-orange-300 to-orange-200 flex items-center justify-center text-orange-900 font-bold text-sm shrink-0" style={{ fontFamily: 'var(--font-display)' }}>
                             {t.name[0]}
                           </div>
@@ -913,6 +907,13 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                             <p className="text-xs text-slate-500">{t.role}</p>
                           </div>
                         </div>
+                        <div className="flex gap-0.5 mb-2 mt-2">
+                          {Array.from({ length: t.stars }).map((_, i) => (
+                            <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <p className="text-sm leading-relaxed text-slate-700 mb-5 italic">"{t.text}"</p>
+                       
                       </CardContent>
                     </Card>
                   </motion.div>
