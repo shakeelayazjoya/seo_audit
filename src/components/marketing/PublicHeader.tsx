@@ -99,7 +99,7 @@ export function PublicHeader() {
           <img
             src="/all-in-one-seo-audit-logo.png"
             alt="All In One SEO Audit Tool"
-            className="h-16 w-auto max-w-[350px] object-contain sm:h-16 sm:max-w-[260px] md:h-16 md:max-w-[320px]"
+            className="h-14 w-auto max-w-[350px] object-contain sm:h-14 sm:max-w-[260px] md:h-14 md:max-w-[320px]"
           />
         </Link>
 
