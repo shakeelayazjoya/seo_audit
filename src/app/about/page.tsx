@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Shield, Sparkles, Zap, Globe, TrendingUp, Award } from 'lucide-react';
+import { ArrowRight, Shield, Sparkles, Zap, Globe, TrendingUp, Award, Linkedin, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import haiderImage from '../../../public/haider.jpeg';
 export const metadata: Metadata = {
   title: 'All In One SEO Audit Tool — Free Technical, CRO, Local and AI SEO Check in 60 Seconds',
   description:
@@ -113,6 +113,98 @@ export default function AboutPage() {
                 <p className="text-sm leading-relaxed text-slate-400">
                   I turned agency experience into a performance-first SEO platform that helps teams discover hidden issues and prioritize fast wins.
                 </p>
+                <Button asChild size="sm" variant="outline" className="mt-5 gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                  <a href="https://www.linkedin.com/in/taqweem-ahmad/" target="_blank" rel="noreferrer">
+                    <Linkedin className="size-4" />
+                    Taqweem on LinkedIn
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Co-founder section */}
+      <section className="relative overflow-hidden border-b border-white/8 bg-black">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(249,115,22,0.16),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(16,185,129,0.1),transparent_30%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 py-18 sm:px-6 sm:py-20">
+          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div>
+              <span className="mb-4 inline-flex items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-orange-300">
+                <Sparkles className="mr-1.5 size-3" />
+                Co-founder built
+              </span>
+              <h2 className="max-w-4xl text-3xl font-bold tracking-tight sm:text-5xl">
+                The co-founder-built SEO audit platform for growth-focused teams.
+              </h2>
+              <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300">
+                Built after years of running technical SEO campaigns for ambitious brands across the USA, UK, and Australia — this platform combines agency-grade process with a fast, modern product experience.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="gap-2 bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-400">
+                  <Link href="/">
+                    Run a Free Audit
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                  <Link href="/contact">
+                    <MessageCircle className="size-4" />
+                    Talk to Me Directly
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="mt-10 grid gap-3 md:grid-cols-3">
+                {[
+                  { label: '5+ Years', value: 'Technical SEO & GEO/AEO experience' },
+                  { label: '100+ Businesses', value: 'Helped across 3 international markets' },
+                  { label: 'USA · UK · Australia', value: "Where I've delivered real results" },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
+                    <p className="text-xl font-bold text-orange-300">{stat.label}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
+              <div className="grid gap-0 sm:grid-cols-[0.9fr_1.1fr] lg:grid-cols-1">
+                <div className="relative min-h-[340px] bg-orange-500">
+                  <Image
+                    src={haiderImage}
+                    alt="Syed Haider Shah - Co-Founder"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 1024px) 100vw, 460px"
+                  />
+                </div>
+                <div className="p-6">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-orange-300">Co-Founder</p>
+                  <h3 className="mt-2 text-2xl font-bold">Syed Haider Shah</h3>
+                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-300">
+                    <p>
+                      I'm a Technical SEO specialist with hands-on experience running campaigns across three markets. I've done the audits, fixed the crawl errors, built the content strategies, and tracked the rankings — for businesses ranging from dental equipment brands in the USA to commercial fitout firms in Australia.
+                    </p>
+                    <p>
+                      I built this platform because the tools available didn't think like an SEO practitioner. They flagged issues without prioritizing them. They gave data without direction.
+                    </p>
+                    <p>
+                      This is the audit platform I wished existed when I was in the trenches. Technical depth, agency-grade thinking, and a product experience that actually tells you what to fix first.
+                    </p>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button asChild size="sm" className="gap-2 bg-orange-500 text-white hover:bg-orange-400">
+                      <a href="https://pk.linkedin.com/in/haider786shah" target="_blank" rel="noreferrer">
+                        <Linkedin className="size-4" />
+                        Syed on LinkedIn
+                      </a>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

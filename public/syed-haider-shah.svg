@@ -1,0 +1,17 @@
+<svg width="720" height="720" viewBox="0 0 720 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="720" rx="48" fill="#f97316"/>
+  <rect x="28" y="28" width="664" height="664" rx="38" fill="url(#grid)" opacity=".16"/>
+  <circle cx="360" cy="238" r="92" fill="#111827"/>
+  <path d="M198 607c20-126 91-198 162-198s142 72 162 198H198Z" fill="#111827"/>
+  <path d="M255 607c12-76 53-120 105-120s93 44 105 120H255Z" fill="#fff"/>
+  <path d="M272 239c18-60 54-93 111-93 42 0 75 16 96 48-16-12-35-17-57-15-24-36-87-28-150 60Z" fill="#0f172a"/>
+  <circle cx="320" cy="246" r="9" fill="#fff"/>
+  <circle cx="400" cy="246" r="9" fill="#fff"/>
+  <path d="M329 294c21 18 43 18 64 0" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+  <text x="360" y="668" text-anchor="middle" fill="#111827" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Syed Haider Shah</text>
+  <defs>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" stroke="white" stroke-width="1"/>
+    </pattern>
+  </defs>
+</svg>

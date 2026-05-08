@@ -48,6 +48,28 @@ function readInitialSearchParams() {
   return new URLSearchParams(window.location.search);
 }
 
+function normalizeDomainInput(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+
+  // Collapse spaces and repair common protocol typos like "https https://example.com".
+  let normalized = trimmed.replace(/\s+/g, '');
+  normalized = normalized.replace(/^(https?|ftp):?(?=https?:\/\/)/i, '');
+  normalized = normalized.replace(/^(https?):(?!\/\/)/i, '$1://');
+
+  // If no protocol is present, default to https so simple domains like google.com work.
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(normalized)) {
+    normalized = `https://${normalized}`;
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    return parsed.toString();
+  } catch {
+    return '';
+  }
+}
+
 // ============================================================
 // Global Styles (injected once)
 // ============================================================
@@ -299,8 +321,9 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url.trim() || !email.trim()) return;
-    onAnalyze(url.trim(), email.trim());
+    const normalizedDomain = normalizeDomainInput(url);
+    if (!normalizedDomain || !email.trim()) return;
+    onAnalyze(normalizedDomain, email.trim());
   };
 
   const startCommercialFlow = async (flow: 'diy' | 'strategy' | 'implementation') => {
@@ -528,11 +551,15 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 <div className="relative flex-1 group">
                   <Globe className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 transition-colors group-focus-within:text-orange-300" />
                   <Input
-                    type="url"
+                    type="text"
                     placeholder="Enter your domain (e.g., example.com)"
                     className="pl-11 h-13 text-base rounded-2xl border-white/15 bg-white/95 text-slate-950 placeholder:text-slate-500 shadow-xl shadow-black/20 transition-all focus:border-orange-300 focus:bg-white focus:shadow-orange-500/10"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
+                    inputMode="url"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     style={{ height: '52px' }}
                     required
                   />
@@ -1212,10 +1239,16 @@ export default function Home() {
           return;
         }
       }
+
+      const normalizedDomain = normalizeDomainInput(domainOrId);
+      if (!normalizedDomain) {
+        throw new Error('Please enter a valid domain.');
+      }
+
       const res = await fetch('/api/audit/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: domainOrId, email }),
+        body: JSON.stringify({ domain: normalizedDomain, email }),
       });
       if (!res.ok) {
         const data = await res.json();

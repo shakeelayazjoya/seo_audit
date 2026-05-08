@@ -172,7 +172,7 @@ export function PublicHeader() {
           type="button"
           variant="ghost"
           size="icon"
-          className="rounded-xl md:hidden"
+          className="rounded-xl text-white hover:bg-white/10 hover:text-white md:hidden"
           onClick={() => setMobileOpen((open) => !open)}
           aria-label="Toggle navigation"
         >
