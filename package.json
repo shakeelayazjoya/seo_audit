@@ -6,9 +6,9 @@
  "scripts": {
   "postinstall": "node scripts/postinstall.mjs",
   "playwright:install": "node scripts/playwright-install.mjs",
-  "dev": "next dev --webpack",
+  "dev": "next dev",
   "build": "next build",
-  "start": "node ./.next/standalone/server.js",
+  "start": "next start",
   "lint": "eslint .",
   "worker": "node scripts/audit-worker.mts",
   "worker:once": "node scripts/audit-worker.mts --once",
