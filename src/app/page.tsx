@@ -37,7 +37,7 @@ import { AuditHistory } from '@/components/seo/AuditHistory';
 import { ContactSection } from '@/components/seo/ContactSection';
 import type { AppView, AuditData, ModuleKey } from '@/lib/types';
 import { MODULE_CONFIG } from '@/lib/types';
-import { getSupportWhatsappUrl } from '@/lib/support';
+import { getPricingInquiryMailto, getSupportWhatsappUrl } from '@/lib/support';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function readInitialSearchParams() {
@@ -861,28 +861,18 @@ function LandingPage({ onAnalyze }: { onAnalyze: (domain: string, email?: string
                 </CardContent>
                 <CardFooter className="px-6 pb-6 pt-4">
                   <Button
+                    asChild
                     className={`w-full rounded-xl font-semibold gap-2 transition-all ${plan.popular
                       ? 'bg-orange-500 text-white shadow-md hover:bg-orange-400 hover:shadow-lg'
                       : 'border-white/15 bg-white/10 text-white hover:bg-white hover:text-black'
                       }`}
                     variant={plan.popular ? 'default' : 'outline'}
-                    onClick={() => {
-                      if (plan.name === 'Free Plan') {
-                        scrollTo('hero');
-                        return;
-                      }
-                      if (plan.name === 'DIY Plan') {
-                        window.location.assign(bookingUrl);
-                        return;
-                      }
-                      void startCommercialFlow('strategy');
-                    }}
                     disabled={!!commerceLoading}
                   >
-                    {commerceLoading && ((commerceLoading === 'diy' && plan.name === 'DIY Plan') || (commerceLoading === 'strategy' && plan.name === 'Strategy Plan'))
-                      ? <><Loader2 className="size-4 animate-spin" /> Opening…</>
-                      : <>{plan.cta} <ArrowRight className="size-3.5" /></>
-                    }
+                    <a href={getPricingInquiryMailto(plan.name)}>
+                      {plan.cta}
+                      <ArrowRight className="size-3.5" />
+                    </a>
                   </Button>
                 </CardFooter>
               </Card>

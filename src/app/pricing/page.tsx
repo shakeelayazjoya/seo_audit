@@ -1,8 +1,6 @@
-import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Zap, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const bookingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/dexora/30min';
+import { getPricingInquiryMailto } from '@/lib/support';
 
 const plans = [
   {
@@ -38,8 +36,6 @@ const plans = [
       'Email support',
     ],
     cta: 'Get DIY Plan',
-    href: bookingUrl,
-    newTab: true,
     popular: true,
     badge: 'Most popular',
   },
@@ -57,8 +53,6 @@ const plans = [
       'Priority email support',
     ],
     cta: 'Get Strategy Plan',
-    href: bookingUrl,
-    newTab: true,
     popular: false,
     badge: null,
   },
@@ -75,7 +69,6 @@ const plans = [
       'Monthly progress reviews',
     ],
     cta: 'Contact us',
-    href: '/contact',
     popular: false,
     badge: null,
   },
@@ -159,17 +152,10 @@ export default function PricingPage() {
                 }`}
                 variant={plan.popular ? 'default' : 'outline'}
               >
-                {plan.newTab ? (
-                  <a href={plan.href} target="_blank" rel="noreferrer">
-                    {plan.cta}
-                    <ArrowRight className="size-4" />
-                  </a>
-                ) : (
-                  <Link href={plan.href}>
-                    {plan.cta}
-                    <ArrowRight className="size-4" />
-                  </Link>
-                )}
+                <a href={getPricingInquiryMailto(plan.name)}>
+                  {plan.cta}
+                  <ArrowRight className="size-4" />
+                </a>
               </Button>
             </div>
           ))}

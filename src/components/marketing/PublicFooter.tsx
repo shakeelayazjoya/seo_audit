@@ -2,8 +2,12 @@
 
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { getSupportEmail, getSupportWhatsappUrl } from '@/lib/support';
 
 export function PublicFooter() {
+  const supportEmail = getSupportEmail();
+  const whatsappUrl = getSupportWhatsappUrl('Hi, I need help with my SEO audit.');
+
   return (
     <footer className="border-t border-white/10 bg-black text-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
@@ -121,13 +125,13 @@ export function PublicFooter() {
             </h4>
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li>
-                <a href="mailto:ahmad@allinoneseoaudit.com" className="hover:text-white transition-colors">
-                  ahmad@allinoneseoaudit.com
+                <a href={`mailto:${supportEmail}`} className="hover:text-white transition-colors">
+                  {supportEmail}
                 </a>
               </li>
               <li>
                 <a
-                  href="https://wa.me/?text=Hello%20Dexora%20Digital"
+                  href={whatsappUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-white transition-colors"
