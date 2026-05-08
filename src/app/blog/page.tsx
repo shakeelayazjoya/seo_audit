@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 
 export default async function BlogPage() {
   const blogs = await listPublishedBlogs();
+  console.log('Fetched blogs:', blogs);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
