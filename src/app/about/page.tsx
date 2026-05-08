@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Shield, Sparkles, Zap, Globe, TrendingUp, Award, Linkedin, MessageCircle } from 'lucide-react';
+import { ArrowRight, Award, BriefcaseBusiness, Globe, Linkedin, MessageCircle, Shield, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import haiderImage from '../../../public/haider.jpeg';
+
+const taqweemWhatsappUrl = 'https://wa.me/358449568407?text=Hi%20Taqweem%2C%20I%20need%20help%20with%20my%20SEO%20audit.';
+
 export const metadata: Metadata = {
   title: 'All In One SEO Audit Tool — Free Technical, CRO, Local and AI SEO Check in 60 Seconds',
   description:
@@ -88,37 +91,53 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Founder card */}
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Founder</p>
-                  <h2 className="text-xl font-semibold">Taqweem Ahmad</h2>
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
+              <div className="grid gap-0 sm:grid-cols-[0.9fr_1.1fr] lg:grid-cols-1">
+                <div className="relative min-h-[340px] bg-orange-500">
+                  <Image
+                    src="https://dexoradigital.com/wp-content/uploads/2026/01/Dexora-Team.png"
+                    alt="Taqweem Ahmad - Founder"
+                    fill
+                    className="object-contain object-center"
+                    sizes="(max-width: 1024px) 100vw, 460px"
+                    priority
+                  />
                 </div>
-                <div className="rounded-lg bg-orange-500/10 p-2 text-orange-400">
-                  <Sparkles className="size-5" />
+                <div className="p-6">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-orange-300">Founder</p>
+                  <h2 className="mt-2 text-2xl font-bold">Taqweem Ahmad</h2>
+                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-300">
+                    <p>
+                      I am Taqweem Ahmad, Founder of Dexora Digital and the creator of All In One SEO Audit. I have spent the last 5 plus years helping over 100 businesses across the USA, UK, and Australia grow their organic traffic, dominate Google Maps, and appear in AI search recommendations on ChatGPT, Perplexity, and Google AI Overviews.
+                    </p>
+                    <p>
+                      I built this tool because every free audit tool I used either checked one thing or gave vague recommendations that led nowhere. This platform checks everything simultaneously and tells you exactly what to fix first based on real impact and real data.
+                    </p>
+                    <p>
+                      I am Top Rated on Upwork with 100 percent Job Success and have delivered results including a Shopify store reaching $1,080,000 in sales through organic SEO alone and an engineering firm going from zero to 265,000 impressions in 12 months. This tool is the same diagnostic process I use for every client, now available to any business owner in 60 seconds for free.
+                    </p>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Button asChild size="sm" className="gap-2 bg-orange-500 text-white hover:bg-orange-400">
+                      <a href="https://www.linkedin.com/in/taqweem-ahmad/" target="_blank" rel="noreferrer">
+                        <Linkedin className="size-4" />
+                        LinkedIn
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                      <a href="https://www.upwork.com/freelancers/taqweema" target="_blank" rel="noreferrer">
+                        <BriefcaseBusiness className="size-4" />
+                        Upwork
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="gap-2 border-green-400/25 bg-green-500/10 text-green-200 hover:bg-green-500/20">
+                      <a href={taqweemWhatsappUrl} target="_blank" rel="noreferrer">
+                        <MessageCircle className="size-4" />
+                        WhatsApp
+                      </a>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="relative h-100 w-full overflow-hidden">
-                <Image
-                  src="https://dexoradigital.com/wp-content/uploads/2026/01/Dexora-Team.png"
-                  alt="Taqweem Ahmad – Founder of Dexora Digital"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 480px"
-                  priority
-                />
-              </div>
-              <div className="p-5">
-                <p className="text-sm leading-relaxed text-slate-400">
-                  I turned agency experience into a performance-first SEO platform that helps teams discover hidden issues and prioritize fast wins.
-                </p>
-                <Button asChild size="sm" variant="outline" className="mt-5 gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
-                  <a href="https://www.linkedin.com/in/taqweem-ahmad/" target="_blank" rel="noreferrer">
-                    <Linkedin className="size-4" />
-                    Taqweem on LinkedIn
-                  </a>
-                </Button>
               </div>
             </div>
           </div>

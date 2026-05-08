@@ -107,7 +107,7 @@ export function PublicFooter() {
               </li>
               
               <li>
-                <Link href="/local-seo-audit" className="hover:text-white transition-colors">
+                <Link href="/seo-local-audit" className="hover:text-white transition-colors">
                   Local SEO Audit
                 </Link>
               </li>

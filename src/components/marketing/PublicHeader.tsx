@@ -46,7 +46,7 @@ const auditModules = [
   { label: 'SEO Audit Tool', href: '/seo-audit-tool' },
   { label: 'On-Page & Content', href: '/on-page-content' },
   { label: 'CRO Analysis', href: '/cro-audit' },
-  { label: 'Local SEO Audit', href: '/local-seo-audit' },
+  { label: 'Local SEO Audit', href: '/seo-local-audit' },
   { label: 'Schema Markup', href: '/schema-markup' },
 ];
 
