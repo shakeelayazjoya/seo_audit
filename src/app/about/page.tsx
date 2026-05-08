@@ -44,8 +44,10 @@ export default function AboutPage() {
             About Dexora Digital
           </span>
 
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div>
+          <div className="rounded-[28px] border border-orange-500/45 bg-black/20 p-5 sm:p-7">
+            <div className="space-y-10">
+            <div className="max-w-5xl">
+              <p className="mb-6 text-sm font-semibold uppercase tracking-[0.25em] text-orange-300/80">About Founder</p>
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
                 The founder-led SEO platform built for growth-focused teams.
               </h1>
@@ -53,60 +55,26 @@ export default function AboutPage() {
                 Built after years of running campaigns for ambitious brands in the USA, UK, and Australia — this audit platform combines agency-grade SEO process with a fast, modern product experience.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  size="lg"
-                  className="gap-2 bg-orange-500 text-white hover:bg-orange-400 shadow-lg shadow-orange-500/20"
-                >
-                  <Link href="/">
-                    Run a free audit
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10"
-                >
-                  <Link href="/contact">Talk to our team</Link>
-                </Button>
-              </div>
-
-              <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                {[
-                  { label: '5+ years', value: 'SEO experience' },
-                  { label: '100+', value: 'businesses helped' },
-                  { label: '3 markets', value: 'USA · UK · Australia' },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-xl border border-white/8 bg-slate-900 p-5 text-center"
-                  >
-                    <p className="text-2xl font-bold text-orange-400">{item.label}</p>
-                    <p className="mt-1 text-xs text-slate-400">{item.value}</p>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
-              <div className="grid gap-0 sm:grid-cols-[0.9fr_1.1fr] lg:grid-cols-1">
-                <div className="relative min-h-[340px] bg-orange-500">
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div className="contents">
+                <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-white/10 bg-orange-500 shadow-2xl shadow-black/40 sm:min-h-[460px]">
+                  <div className="absolute inset-y-0 left-0 w-1/3 bg-orange-600" />
+                  <div className="absolute inset-y-0 right-0 w-1/3 bg-orange-600" />
                   <Image
                     src="https://dexoradigital.com/wp-content/uploads/2026/01/Dexora-Team.png"
                     alt="Taqweem Ahmad - Founder"
                     fill
-                    className="object-contain object-center"
+                    className="relative z-10 object-contain object-center"
                     sizes="(max-width: 1024px) 100vw, 460px"
                     priority
                   />
                 </div>
-                <div className="p-6">
+                <div className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl shadow-black/30">
                   <p className="text-xs font-semibold uppercase tracking-widest text-orange-300">Founder</p>
-                  <h2 className="mt-2 text-2xl font-bold">Taqweem Ahmad</h2>
-                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-300">
+                  <h2 className="mt-2 text-xl font-bold">Taqweem Ahmad</h2>
+                  <div className="mt-4 space-y-3 text-xs leading-6 text-slate-300">
                     <p>
                       I am Taqweem Ahmad, Founder of Dexora Digital and the creator of All In One SEO Audit. I have spent the last 5 plus years helping over 100 businesses across the USA, UK, and Australia grow their organic traffic, dominate Google Maps, and appear in AI search recommendations on ChatGPT, Perplexity, and Google AI Overviews.
                     </p>
@@ -117,6 +85,43 @@ export default function AboutPage() {
                       I am Top Rated on Upwork with 100 percent Job Success and have delivered results including a Shopify store reaching $1,080,000 in sales through organic SEO alone and an engineering firm going from zero to 265,000 impressions in 12 months. This tool is the same diagnostic process I use for every client, now available to any business owner in 60 seconds for free.
                     </p>
                   </div>
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    {[
+                      { label: '5+ years', value: 'SEO experience' },
+                      { label: '100+', value: 'businesses helped' },
+                      { label: '3 markets', value: 'USA · UK · Australia' },
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-xl border border-white/8 bg-slate-900 p-5 text-center"
+                      >
+                        <p className="text-2xl font-bold text-orange-400">{item.label}</p>
+                        <p className="mt-1 text-xs text-slate-400">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="gap-2 bg-orange-500 text-white hover:bg-orange-400 shadow-lg shadow-orange-500/20"
+                    >
+                      <Link href="/">
+                        Run a free audit
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      size="lg"
+                      variant="outline"
+                      className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10"
+                    >
+                      <Link href="/contact">Talk to our team</Link>
+                    </Button>
+                  </div>
+
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button asChild size="sm" className="gap-2 bg-orange-500 text-white hover:bg-orange-400">
                       <a href="https://www.linkedin.com/in/taqweem-ahmad/" target="_blank" rel="noreferrer">
@@ -140,6 +145,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </section>
@@ -148,8 +154,10 @@ export default function AboutPage() {
       <section className="relative overflow-hidden border-b border-white/8 bg-black">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(249,115,22,0.16),transparent_34%),radial-gradient(circle_at_80%_10%,rgba(16,185,129,0.1),transparent_30%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-18 sm:px-6 sm:py-20">
-          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div>
+          <p className="mb-8 text-center text-sm font-semibold uppercase tracking-[0.25em] text-orange-300/80">About Co-Founder</p>
+          <div className="rounded-[28px] border border-orange-500/45 bg-black/20 p-5 sm:p-7">
+          <div className="space-y-10">
+            <div className="max-w-5xl">
               <span className="mb-4 inline-flex items-center rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-orange-300">
                 <Sparkles className="mr-1.5 size-3" />
                 Co-founder built
@@ -161,50 +169,25 @@ export default function AboutPage() {
                 Built after years of running technical SEO campaigns for ambitious brands across the USA, UK, and Australia — this platform combines agency-grade process with a fast, modern product experience.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="gap-2 bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-400">
-                  <Link href="/">
-                    Run a Free Audit
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
-                  <Link href="/contact">
-                    <MessageCircle className="size-4" />
-                    Talk to Me Directly
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="mt-10 grid gap-3 md:grid-cols-3">
-                {[
-                  { label: '5+ Years', value: 'Technical SEO & GEO/AEO experience' },
-                  { label: '100+ Businesses', value: 'Helped across 3 international markets' },
-                  { label: 'USA · UK · Australia', value: "Where I've delivered real results" },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
-                    <p className="text-xl font-bold text-orange-300">{stat.label}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">{stat.value}</p>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/40">
-              <div className="grid gap-0 sm:grid-cols-[0.9fr_1.1fr] lg:grid-cols-1">
-                <div className="relative min-h-[340px] bg-orange-500">
+            <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div className="contents">
+                <div className="relative min-h-[360px] overflow-hidden rounded-2xl border border-white/10 bg-orange-500 shadow-2xl shadow-black/40 sm:min-h-[460px]">
+                  <div className="absolute inset-y-0 left-0 w-1/3 bg-orange-600" />
+                  <div className="absolute inset-y-0 right-0 w-1/3 bg-orange-600" />
                   <Image
                     src={haiderImage}
                     alt="Syed Haider Shah - Co-Founder"
                     fill
-                    className="object-contain"
+                    className="relative z-10 object-contain object-center"
                     sizes="(max-width: 1024px) 100vw, 460px"
                   />
                 </div>
-                <div className="p-6">
+                <div className="rounded-2xl border border-white/10 bg-slate-950 p-6 shadow-2xl shadow-black/30">
                   <p className="text-xs font-semibold uppercase tracking-widest text-orange-300">Co-Founder</p>
-                  <h3 className="mt-2 text-2xl font-bold">Syed Haider Shah</h3>
-                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-300">
+                  <h3 className="mt-2 text-xl font-bold">Syed Haider Shah</h3>
+                  <div className="mt-4 space-y-3 text-xs leading-6 text-slate-300">
                     <p>
                       I'm a Technical SEO specialist with hands-on experience running campaigns across three markets. I've done the audits, fixed the crawl errors, built the content strategies, and tracked the rankings — for businesses ranging from dental equipment brands in the USA to commercial fitout firms in Australia.
                     </p>
@@ -215,6 +198,34 @@ export default function AboutPage() {
                       This is the audit platform I wished existed when I was in the trenches. Technical depth, agency-grade thinking, and a product experience that actually tells you what to fix first.
                     </p>
                   </div>
+                  <div className="mt-6 grid gap-3 md:grid-cols-3">
+                    {[
+                      { label: '5+ Years', value: 'Technical SEO & GEO/AEO experience' },
+                      { label: '100+ Businesses', value: 'Helped across 3 international markets' },
+                      { label: 'USA · UK · Australia', value: "Where I've delivered real results" },
+                    ].map((stat) => (
+                      <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
+                        <p className="text-xl font-bold text-orange-300">{stat.label}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild size="lg" className="gap-2 bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-400">
+                      <Link href="/">
+                        Run a Free Audit
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="lg" variant="outline" className="gap-2 border-white/15 bg-white/5 text-white hover:bg-white/10">
+                      <Link href="/contact">
+                        <MessageCircle className="size-4" />
+                        Talk to Me Directly
+                      </Link>
+                    </Button>
+                  </div>
+
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button asChild size="sm" className="gap-2 bg-orange-500 text-white hover:bg-orange-400">
                       <a href="https://pk.linkedin.com/in/haider786shah" target="_blank" rel="noreferrer">
@@ -226,6 +237,50 @@ export default function AboutPage() {
                 </div>
               </div>
             </div>
+          </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Niche metrics */}
+      <section className="border-b border-white/8 bg-slate-950">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+          <div className="mb-8 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-orange-400">Proof across niches</p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight">SEO experience built from real campaigns</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              {
+                number: '500+',
+                label: 'SEO Audits Delivered',
+                subtext: 'Across USA, UK, Australia, Canada and Europe',
+              },
+              {
+                number: '100+',
+                label: 'Businesses Ranked',
+                subtext: 'On Google Maps and Local Search in the USA',
+              },
+              {
+                number: '50+',
+                label: 'Brands in AI Search',
+                subtext: 'Appearing in ChatGPT, Perplexity and Google AI Overviews',
+              },
+              {
+                number: '100+',
+                label: 'SEO Ready Websites',
+                subtext: 'Developed and launched across multiple industries',
+              },
+            ].map((metric) => (
+              <div
+                key={metric.label}
+                className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-xl shadow-black/20 transition-all hover:-translate-y-1 hover:border-orange-400/35 hover:bg-white/[0.07]"
+              >
+                <p className="text-4xl font-black tracking-tight text-orange-300">{metric.number}</p>
+                <h3 className="mt-4 text-lg font-bold text-white">{metric.label}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-400">{metric.subtext}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
