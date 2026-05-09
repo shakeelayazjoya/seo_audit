@@ -10,7 +10,7 @@ import { logAppEvent } from './monitoring.ts';
 import { generateAuditPdf, persistAuditPdfReport } from './report-pdf.ts';
 import { db } from './db.ts';
 import { sendEmail } from './email.ts';
-import { buildReportDeliveryEmail } from './email-templates.ts';
+import { buildAuditCompletedAdminEmail, buildReportDeliveryEmail } from './email-templates.ts';
 
 const WORKER_AUDIT_TIMEOUT_MS = 150000;
 const IDLE_SLEEP_MS = 4000;
@@ -77,6 +77,72 @@ function getPartialAuditState(modules: Awaited<ReturnType<typeof generateAuditMo
     isPartial: false,
     partialReason: null,
   };
+}
+
+function getAuditAdminEmail() {
+  return (
+    process.env.AUDIT_ADMIN_EMAIL?.trim() ||
+    process.env.CONTACT_INBOX?.trim() ||
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() ||
+    'ahmad@allinoneseoaudit.com'
+  );
+}
+
+async function sendAuditCompletedAdminNotification(auditId: string) {
+  const auditWithUser = await db.audit.findUnique({
+    where: { id: auditId },
+    include: {
+      user: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!auditWithUser) {
+    return;
+  }
+
+  const lead = await db.lead.findFirst({
+    where: { auditId },
+    orderBy: { createdAt: 'desc' },
+    select: { email: true },
+  });
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const reportUrl = `${appUrl}/?audit=${auditWithUser.id}`;
+  const targetEmail = getAuditAdminEmail();
+  const email = buildAuditCompletedAdminEmail({
+    domain: auditWithUser.domain,
+    auditId: auditWithUser.id,
+    overallScore: auditWithUser.overallScore,
+    reportUrl,
+    requesterEmail: auditWithUser.user?.email ?? lead?.email ?? null,
+    isPartial: auditWithUser.isPartial,
+    partialReason: auditWithUser.partialReason,
+  });
+
+  const delivery = await sendEmail({
+    to: targetEmail,
+    subject: email.subject,
+    html: email.html,
+    text: email.text,
+  });
+
+  await logAppEvent({
+    level: delivery.success ? 'info' : 'warn',
+    type: 'audit.admin_email_sent',
+    message: delivery.success ? 'Audit completion admin email sent' : 'Audit completion admin email skipped',
+    context: {
+      auditId: auditWithUser.id,
+      domain: auditWithUser.domain,
+      email: targetEmail,
+      requesterEmail: auditWithUser.user?.email ?? lead?.email ?? null,
+      provider: delivery.provider,
+      skippedReason: delivery.skippedReason ?? null,
+    },
+  });
 }
 
 async function sendAuditCompletionEmail(auditId: string) {
@@ -203,6 +269,21 @@ export async function processOneAuditJob() {
           auditId: job.auditId,
           domain: job.domain,
           error: storageError instanceof Error ? storageError.message : 'Unknown storage error',
+        },
+      });
+    }
+
+    try {
+      await sendAuditCompletedAdminNotification(job.auditId);
+    } catch (adminEmailError) {
+      await logAppEvent({
+        level: 'warn',
+        type: 'audit.admin_email_failed',
+        message: 'Audit completion admin email failed',
+        context: {
+          auditId: job.auditId,
+          domain: job.domain,
+          error: adminEmailError instanceof Error ? adminEmailError.message : 'Unknown email error',
         },
       });
     }

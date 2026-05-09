@@ -4,8 +4,10 @@ import { getSessionFromRequest } from '@/lib/auth';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { logAppEvent } from '@/lib/monitoring';
 import { triggerBackgroundAuditDrain } from '@/lib/audit-worker-runtime';
+import { db } from '@/lib/db';
 
 const DOMAIN_REGEX = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const runtime = 'nodejs';
 
 function getRequesterKey(request: NextRequest) {
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { domain } = body as { domain?: string };
+    const { domain, email } = body as { domain?: string; email?: string };
 
     // ── Validate domain ───────────────────────────────────────────────────
     if (!domain || typeof domain !== 'string') {
@@ -59,6 +61,19 @@ export async function POST(request: NextRequest) {
       userId: session?.user?.id ?? null,
     });
 
+    const leadEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    if (EMAIL_REGEX.test(leadEmail)) {
+      await db.lead.create({
+        data: {
+          email: leadEmail,
+          domain: normalized,
+          auditId,
+          userId: session?.user?.id ?? null,
+          source: 'audit_start',
+        },
+      });
+    }
+
     await logAppEvent({
       level: 'info',
       type: 'audit.queued',
@@ -67,6 +82,7 @@ export async function POST(request: NextRequest) {
         auditId,
         domain: normalized,
         userId: session?.user?.id ?? null,
+        leadEmail: EMAIL_REGEX.test(leadEmail) ? leadEmail : null,
       },
     });
 

@@ -58,6 +58,48 @@ export function buildReportDeliveryEmail(params: {
   return { subject, html, text };
 }
 
+export function buildAuditCompletedAdminEmail(params: {
+  domain: string;
+  auditId: string;
+  overallScore: number;
+  reportUrl: string;
+  requesterEmail?: string | null;
+  isPartial?: boolean;
+  partialReason?: string | null;
+}) {
+  const requesterEmail = params.requesterEmail?.trim() || 'Not available';
+  const coverageLabel = params.isPartial ? 'Degraded coverage' : 'Full coverage';
+  const subject = `SEO audit completed: ${params.domain} (${params.overallScore}/100)`;
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6">
+      <h1 style="margin-bottom:8px;">SEO audit completed</h1>
+      <p>A website audit has finished and is ready to review.</p>
+      <div style="padding:14px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;">
+        <p><strong>Domain:</strong> ${escapeHtml(params.domain)}</p>
+        <p><strong>Overall score:</strong> ${params.overallScore}/100</p>
+        <p><strong>Audit ID:</strong> ${escapeHtml(params.auditId)}</p>
+        <p><strong>Requester email:</strong> ${escapeHtml(requesterEmail)}</p>
+        <p><strong>Coverage:</strong> ${escapeHtml(coverageLabel)}</p>
+        ${params.partialReason ? `<p><strong>Coverage note:</strong> ${escapeHtml(params.partialReason)}</p>` : ''}
+      </div>
+      <p style="margin-top:18px;"><a href="${escapeHtml(params.reportUrl)}" style="display:inline-block;background:#f97316;color:#ffffff;padding:12px 18px;border-radius:8px;text-decoration:none;">Open audit report</a></p>
+    </div>
+  `;
+
+  const text = [
+    'SEO audit completed',
+    `Domain: ${params.domain}`,
+    `Overall score: ${params.overallScore}/100`,
+    `Audit ID: ${params.auditId}`,
+    `Requester email: ${requesterEmail}`,
+    `Coverage: ${coverageLabel}`,
+    params.partialReason ? `Coverage note: ${params.partialReason}` : null,
+    `Open report: ${params.reportUrl}`,
+  ].filter(Boolean).join('\n');
+
+  return { subject, html, text };
+}
+
 export function buildBookingConfirmationEmail(params: {
   recipientEmail: string;
   domain: string | null;
