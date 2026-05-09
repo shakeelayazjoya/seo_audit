@@ -250,7 +250,7 @@ export async function processOneAuditJob() {
     try {
       const storedReport = await persistAuditPdfReport(job.auditId);
       await logAppEvent({
-        level: 'info',
+        level: 'info', 
         type: 'audit.report_stored',
         message: 'Audit PDF stored in Cloudinary',
         context: {
