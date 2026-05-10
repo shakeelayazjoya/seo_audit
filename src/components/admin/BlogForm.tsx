@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { Extension } from '@tiptap/core';
 import { EditorContent, type Editor, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -58,6 +59,54 @@ interface BlogFormInitialData {
   metaDescription?: string | null;
   status?: string;
 }
+
+const LINE_HEIGHT_OPTIONS = [
+  { label: 'Default', value: 'normal' },
+  { label: '1.0', value: '1' },
+  { label: '1.15', value: '1.15' },
+  { label: '1.5', value: '1.5' },
+  { label: '1.75', value: '1.75' },
+  { label: '2.0', value: '2' },
+  { label: '2.5', value: '2.5' },
+  { label: '3.0', value: '3' },
+  { label: '4.0', value: '4' },
+  { label: '5.0', value: '5' },
+];
+
+const LineHeight = Extension.create({
+  name: 'lineHeight',
+  addOptions() {
+    return { types: ['heading', 'paragraph'] };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types as string[],
+        attributes: {
+          lineHeight: {
+            default: null,
+            parseHTML: (element: HTMLElement) => element.style.lineHeight || null,
+            renderHTML: (attributes: { lineHeight?: string | null }) => {
+              if (!attributes.lineHeight || attributes.lineHeight === 'normal') return {};
+              return { style: `line-height: ${attributes.lineHeight}` };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setLineHeight:
+        (lineHeight: string) =>
+        ({ commands }: { commands: { updateAttributes: (type: string, attrs: Record<string, unknown>) => boolean } }) => {
+          return (this.options.types as string[]).some((type) =>
+            commands.updateAttributes(type, { lineHeight }),
+          );
+        },
+    } as Record<string, unknown>;
+  },
+});
 
 function slugify(value: string) {
   return value
@@ -131,6 +180,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
         placeholder: 'Write the full article here. Use headings, lists, quotes, links, images, and developer-friendly formatting...',
       }),
       Typography,
+      LineHeight,
       Highlight.configure({ multicolor: false }),
       TaskList.configure({
         HTMLAttributes: { class: 'not-prose my-4 space-y-2' },
@@ -145,7 +195,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
     editorProps: {
       attributes: {
         class:
-          'min-h-[360px] rounded-b-xl border-x border-b bg-background px-5 py-4 text-sm leading-7 outline-none prose-headings:font-semibold prose-a:text-orange-600',
+          'prose prose-sm max-w-none min-h-[360px] rounded-b-xl border-x border-b bg-background px-5 py-4 outline-none prose-headings:font-semibold prose-a:text-orange-600 dark:prose-invert',
       },
     },
     onUpdate: ({ editor: currentEditor }) => {
@@ -211,6 +261,23 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (html: s
         <ToolbarButton editor={editor} label="Remove link" icon={<Unlink className="size-4" />} disabled={!editor.isActive('link')} onClick={() => editor.chain().focus().unsetLink().run()} />
         <ToolbarButton editor={editor} label="Insert image URL" icon={<ImagePlus className="size-4" />} onClick={setImage} />
         <span className="mx-1 h-6 w-px bg-border" />
+        <select
+          title="Line height"
+          className="h-8 rounded-md border bg-background px-2 text-xs text-foreground"
+          value={(
+            editor.getAttributes('heading').lineHeight ||
+            editor.getAttributes('paragraph').lineHeight ||
+            'normal'
+          ) as string}
+          onChange={(e) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (editor.chain().focus() as any).setLineHeight(e.target.value).run();
+          }}
+        >
+          {LINE_HEIGHT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
         <ToolbarButton editor={editor} label="Clear formatting" icon={<RemoveFormatting className="size-4" />} onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} />
         <ToolbarButton editor={editor} label="Undo" icon={<Undo2 className="size-4" />} disabled={!editor.can().undo()} onClick={() => editor.chain().focus().undo().run()} />
         <ToolbarButton editor={editor} label="Redo" icon={<Redo2 className="size-4" />} disabled={!editor.can().redo()} onClick={() => editor.chain().focus().redo().run()} />
@@ -259,7 +326,7 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
     setError('');
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (submitStatus: 'draft' | 'published' = status) => {
     setError('');
     setSuccess('');
     if (!canSubmit) {
@@ -275,7 +342,7 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
     formData.set('categories', categories);
     formData.set('tags', tags);
     formData.set('metaDescription', metaDescription);
-    formData.set('status', status);
+    formData.set('status', submitStatus);
     if (image) formData.set('image', image);
 
     setLoading(true);
@@ -298,7 +365,7 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-20">
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <section className="rounded-xl border bg-card p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3">
@@ -399,13 +466,16 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
                 </div>
                 <Textarea value={metaDescription} onChange={(event) => setMetaDescription(event.target.value)} className="min-h-24" />
               </div>
-              <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                <div>
-                  <p className="text-sm font-medium">Publish Status</p>
-                  <p className="text-xs text-muted-foreground">Save as draft or publish live.</p>
-                </div>
-                <Button type="button" variant={status === 'published' ? 'default' : 'outline'} size="sm" onClick={() => setStatus(status === 'published' ? 'draft' : 'published')}>
-                  {status === 'published' ? 'Published' : 'Draft'}
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              {success && <p className="text-sm text-emerald-600">{success}</p>}
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" disabled={loading || !canSubmit} onClick={() => handleSubmit('draft')} className="flex-1 gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  Save Draft
+                </Button>
+                <Button type="button" disabled={loading || !canSubmit} onClick={() => handleSubmit('published')} className="flex-1 gap-2">
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  Publish
                 </Button>
               </div>
             </div>
@@ -413,7 +483,7 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
         </aside>
       </div>
 
-      <div className="sticky bottom-4 z-10 rounded-xl border bg-background/95 p-3 shadow-lg backdrop-blur">
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 p-3 shadow-lg backdrop-blur lg:left-80">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -422,9 +492,13 @@ export function BlogForm({ initialData }: { initialData?: BlogFormInitialData })
           </div>
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={() => router.push('/admin/blogs')}>Cancel</Button>
-            <Button type="button" disabled={loading || !canSubmit} onClick={handleSubmit} className="gap-2">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : status === 'published' ? <Send className="size-4" /> : <Save className="size-4" />}
-              {loading ? 'Saving...' : status === 'published' ? 'Publish' : 'Save Draft'}
+            <Button type="button" variant="outline" disabled={loading || !canSubmit} onClick={() => handleSubmit('draft')} className="gap-2">
+              {loading ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+              Save Draft
+            </Button>
+            <Button type="button" disabled={loading || !canSubmit} onClick={() => handleSubmit('published')} className="gap-2">
+              {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+              Publish
             </Button>
           </div>
         </div>

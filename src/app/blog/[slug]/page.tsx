@@ -31,7 +31,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <main className="min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
-      <article className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <article className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
         <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">
           <ArrowLeft className="size-4" />
           Back to blog
