@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { MarketingShell } from '@/components/marketing/MarketingShell';
+import { MicrosoftClarity } from '@/components/analytics/MicrosoftClarity';
 
 export const metadata: Metadata = {
   title: "All In One SEO Audit Tool — Free Technical, CRO, Local and AI SEO Check in 60 Seconds",
@@ -64,6 +65,7 @@ export default function RootLayout({
         }
         className="antialiased bg-background text-foreground"
       >
+        <MicrosoftClarity />
         <MarketingShell>{children}</MarketingShell>
         <Toaster />
       </body>

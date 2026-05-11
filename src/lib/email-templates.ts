@@ -192,3 +192,30 @@ export function buildContactConfirmationEmail(params: {
   const text = `Thanks for reaching out, ${greetingName}. We received your message and will get back to you shortly.`;
   return { subject, html, text };
 }
+
+export function buildPasswordResetEmail(params: {
+  resetUrl: string;
+  recipientEmail: string;
+  expiresInMinutes: number;
+}) {
+  const subject = 'Reset your All In One SEO Audit password';
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;color:#0f172a;line-height:1.6">
+      <h1 style="margin-bottom:8px;">Reset your password</h1>
+      <p>We received a request to reset the password for <strong>${escapeHtml(params.recipientEmail)}</strong>.</p>
+      <p>This link expires in ${params.expiresInMinutes} minutes.</p>
+      <p><a href="${escapeHtml(params.resetUrl)}" style="display:inline-block;background:#f97316;color:#ffffff;padding:12px 18px;border-radius:8px;text-decoration:none;">Reset password</a></p>
+      <p>If you did not request this, you can safely ignore this email.</p>
+    </div>
+  `;
+  const text = [
+    'Reset your All In One SEO Audit password',
+    `Email: ${params.recipientEmail}`,
+    `This link expires in ${params.expiresInMinutes} minutes.`,
+    `Reset link: ${params.resetUrl}`,
+    '',
+    'If you did not request this, you can safely ignore this email.',
+  ].join('\n');
+
+  return { subject, html, text };
+}

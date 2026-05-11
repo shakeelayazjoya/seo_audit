@@ -42,7 +42,11 @@ function getProviderName() {
 }
 
 function getSenderAddress() {
-  return process.env.EMAIL_FROM?.trim() || 'SEO Audit <no-reply@localhost>';
+  const configuredFrom = process.env.EMAIL_FROM?.trim();
+  if (configuredFrom) return configuredFrom;
+
+  const fallbackUser = process.env.SMTP_USER?.trim() || process.env.EMAIL_USER?.trim();
+  return fallbackUser ? `SEO Audit <${fallbackUser}>` : 'SEO Audit <no-reply@localhost>';
 }
 
 class ConsoleEmailProvider implements EmailProvider {
@@ -73,13 +77,15 @@ class SmtpEmailProvider implements EmailProvider {
   private transporterPromise: Promise<Transporter> | null = null;
 
   isConfigured() {
-    return Boolean(
+    const hasSmtpConfig = Boolean(
       process.env.SMTP_HOST &&
       process.env.SMTP_PORT &&
       process.env.SMTP_USER &&
-      process.env.SMTP_PASS &&
-      process.env.EMAIL_FROM
+      process.env.SMTP_PASS
     );
+    const hasGmailConfig = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+
+    return hasSmtpConfig || hasGmailConfig;
   }
 
   private getTransporter() {
@@ -88,16 +94,29 @@ class SmtpEmailProvider implements EmailProvider {
         const nodemailerModule = await import('nodemailer');
         const createTransport = nodemailerModule.createTransport;
 
+        if (process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS) {
+          return createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            secure: String(process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true',
+            connectionTimeout: getEmailTimeoutMs(),
+            greetingTimeout: getEmailTimeoutMs(),
+            socketTimeout: getEmailTimeoutMs(),
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+        }
+
         return createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT),
-          secure: String(process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true',
+          service: 'gmail',
           connectionTimeout: getEmailTimeoutMs(),
           greetingTimeout: getEmailTimeoutMs(),
           socketTimeout: getEmailTimeoutMs(),
           auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
           },
         });
       })();
