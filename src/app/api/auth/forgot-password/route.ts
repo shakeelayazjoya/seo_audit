@@ -22,10 +22,20 @@ function getRequesterKey(request: NextRequest) {
 }
 
 function getAppUrl(request: NextRequest) {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') ||
-    `${request.nextUrl.protocol}//${request.nextUrl.host}`
-  );
+  const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const forwardedHost = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();
+
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+  console.warn('[getAppUrl] Missing x-forwarded-proto or x-forwarded-host headers, falling back to request URL or environment variable');
+  console.log("Next URL:", request.nextUrl.href, "Environment URL:", process.env.NEXT_PUBLIC_APP_URL);
+
+  if (request.nextUrl.host) {
+    return `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+  }
+
+  return process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, '') || 'http://localhost:3000';
 }
 
 export async function POST(request: NextRequest) {
