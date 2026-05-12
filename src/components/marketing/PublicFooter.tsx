@@ -19,11 +19,13 @@ export function PublicFooter() {
                 alt="All In One SEO Audit logo"
                 className="h-12 w-auto max-w-[180px] sm:h-14 sm:max-w-[200px] object-contain"
               />
+              <a href="https://dexoradigital.com">
               <img
                 src="/dexora.png"
                 alt="Dexora Digital logo"
                 className="h-12 w-auto max-w-[180px] sm:h-14 sm:max-w-[200px] object-contain"
               />
+              </a>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               Professional SEO audit platform trusted by thousands of businesses worldwide. Get actionable insights to improve your search rankings.
