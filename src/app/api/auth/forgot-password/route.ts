@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
       windowMs: 1000 * 60 * 30,
     });
 
-    if (!rateLimit.allowed) {
-      return NextResponse.json({ error: 'Too many reset requests. Please try later.' }, { status: 429 });
-    }
+    // if (!rateLimit.allowed) {
+    //   return NextResponse.json({ error: 'Too many reset requests. Please try later.' }, { status: 429 });
+    // }
 
     const body = await request.json();
     const email = String(body.email ?? '').trim().toLowerCase();
